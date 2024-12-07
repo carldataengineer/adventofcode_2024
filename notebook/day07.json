@@ -1,0 +1,527 @@
+{
+	"name": "day07",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlbig",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "cf843ca4-60e2-4ab7-a0a9-49c804916b20"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlbig",
+				"name": "carlbig",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlbig",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input = pd.read_csv(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day07/input.txt\"\\\r\n",
+					"                    , sep=':'\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , names=['test_value', 'test_numbers'])\r\n",
+					"df_input.head()"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input['numbers'] = df_input['test_numbers'].str.split()\r\n",
+					"df_input['numbers_count'] = df_input['numbers'].apply(len)\r\n",
+					"#df_input.sort_values(by='numbers_count', ascending=True).head()"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def get_operators(qty):\r\n",
+					"    o = {'key': [0, 0],\r\n",
+					"        'op_0': ['+', '*']\r\n",
+					"        }\r\n",
+					"    df_o = pd.DataFrame(o)\r\n",
+					"    df_ops = df_o.copy()\r\n",
+					"\r\n",
+					"    for i in range(qty-1):\r\n",
+					"        df_ops = pd.merge(df_ops, df_o, on='key')\r\n",
+					"        df_ops.columns = ['key'] + ['op_'+str(number) for number in range(i+2)]\r\n",
+					"\r\n",
+					"    return df_ops.drop('key', axis=1)"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def calibrate(required_value, number_str):\r\n",
+					"    \r\n",
+					"    # Convert number_str to list\r\n",
+					"    numbers = [number for number in number_str.split()]\r\n",
+					"\r\n",
+					"    # get a dataframe of operators\r\n",
+					"    num_o = len(numbers) - 1\r\n",
+					"    df_operators = get_operators(num_o)\r\n",
+					"\r\n",
+					"    # append column\r\n",
+					"    df_operators['operation'] = '('*num_o + numbers[0]\r\n",
+					"    for i in range (len(numbers)-1):\r\n",
+					"        df_operators['operation'] = df_operators['operation'] + df_operators['op_'+str(i)]\r\n",
+					"        df_operators['operation'] = df_operators['operation'] + numbers[i+1] + ')'\r\n",
+					"\r\n",
+					"    # calculate the result acvross data frame\r\n",
+					"    df_operators['result'] = df_operators['operation'].apply(eval)\r\n",
+					"    # filter down to required_value\r\n",
+					"    s_calibration = df_operators[df_operators['result'] == int(required_value)]['operation']\r\n",
+					"\r\n",
+					"    # handle failure\r\n",
+					"    if len(s_calibration) >= 1:\r\n",
+					"        calibration = s_calibration.values[0]\r\n",
+					"    else:\r\n",
+					"        calibration = ''\r\n",
+					"\r\n",
+					"    return calibration"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#calibrate('292', '11 6 16 20')\r\n",
+					"#calibrate('190', '10 19')\r\n",
+					"#calibrate('202', '3 39 85')\r\n",
+					"calibrate('21006540', '25 34 307 82 27')"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_test = df_input[df_input['numbers_count'] == 3].copy()\r\n",
+					"df_test['calibrate'] = df_test.apply(lambda x: calibrate(x['test_value'], x['test_numbers']), axis=1)\r\n",
+					"df_test.head()"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input['calibrate'] = df_input.apply(lambda x: calibrate(x['test_value'], x['test_numbers']), axis=1)\r\n",
+					"df_input['calibrate_len'] = df_input['calibrate'].apply(len)\r\n",
+					"df_input[df_input['calibrate_len']>0].head(10)"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input[df_input['calibrate_len']>0]['test_value'].sum()"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input.to_csv(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day07/df_calibrate.csv\")"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Part 2"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def o_add(i1, i2):\r\n",
+					"    return i1 + i2\r\n",
+					"\r\n",
+					"def o_mul(i1, i2):\r\n",
+					"    return i1 * i2\r\n",
+					"    \r\n",
+					"def o_con(i1, i2):\r\n",
+					"    return int(str(i1) + str(i2))"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def get_operators_p2(qty):\r\n",
+					"    o = {'key': [0, 0, 0],\r\n",
+					"        'op_0': ['o_add', 'o_mul', 'o_con']\r\n",
+					"        }\r\n",
+					"    df_o = pd.DataFrame(o)\r\n",
+					"    df_ops = df_o.copy()\r\n",
+					"\r\n",
+					"    for i in range(qty-1):\r\n",
+					"        df_ops = pd.merge(df_ops, df_o, on='key')\r\n",
+					"        df_ops.columns = ['key'] + ['op_'+str(number) for number in range(i+2)]\r\n",
+					"\r\n",
+					"    return df_ops.drop('key', axis=1)"
+				],
+				"execution_count": 18
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def calibrate_p2(required_value, number_str):\r\n",
+					"    \r\n",
+					"    # Convert number_str to list\r\n",
+					"    numbers = [number for number in number_str.split()]\r\n",
+					"\r\n",
+					"    # get a dataframe of operators\r\n",
+					"    num_o = len(numbers) - 1\r\n",
+					"    df_operators = get_operators_p2(num_o)\r\n",
+					"\r\n",
+					"    # append column  \r\n",
+					"    df_operators['operation'] = ''      \r\n",
+					"    for i in range (len(numbers)-1):\r\n",
+					"        df_operators['operation'] = df_operators['operation'] + df_operators['op_'+str(i)] + '('\r\n",
+					"\r\n",
+					"    df_operators['operation'] = df_operators['operation'] + numbers[0]\r\n",
+					"\r\n",
+					"    for i in range (1, len(numbers)):\r\n",
+					"        df_operators['operation'] = df_operators['operation'] + ',' + numbers[i] + ')'\r\n",
+					"\r\n",
+					"    # calculate the result acvross data frame\r\n",
+					"    for op in df_operators['operation']:\r\n",
+					"        if (int(required_value) == eval(op)):\r\n",
+					"            return op\r\n",
+					"\r\n",
+					"    return ''"
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input['calibrate_p2'] = df_input.apply(lambda x: calibrate_p2(x['test_value'], x['test_numbers']), axis=1)\r\n",
+					"df_input['calibrate_p2_len'] = df_input['calibrate_p2'].apply(len)\r\n",
+					"df_input[df_input['calibrate_p2_len']>0].head(10)"
+				],
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input[df_input['calibrate_p2_len']>0]['test_value'].sum()"
+				],
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input['calibrate_p3'] = df_input.apply(lambda x: calibrate_p2(x['test_value'], x['test_numbers']), axis=1)\r\n",
+					"df_input['calibrate_p3_len'] = df_input['calibrate_p3'].apply(len)\r\n",
+					"df_input[df_input['calibrate_p3_len']>0].head(10)"
+				],
+				"execution_count": 19
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input[df_input['calibrate_p3_len']>0]['test_value'].sum()"
+				],
+				"execution_count": 20
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Test Zone"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"eval('((81+40)*27)')"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"eval('o_add(o_mul(81,40),27)')"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#calibrate_p2('292', '11 6 16 20')\r\n",
+					"#calibrate_p2('190', '10 19')\r\n",
+					"#calibrate_p2('202', '3 39 85')\r\n",
+					"#calibrate_p2('21006540', '25 34 307 82 27')\r\n",
+					"calibrate_p2('7290', '6 8 6 15')"
+				]
+			}
+		]
+	}
+}

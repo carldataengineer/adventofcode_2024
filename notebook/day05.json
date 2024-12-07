@@ -1,0 +1,521 @@
+{
+	"name": "day05",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlbig",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "e4a6067c-58ed-4053-a026-e766c350331a"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlbig",
+				"name": "carlbig",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlbig",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day05/input.txt\"\\\r\n",
+					"                    , colspecs=[(0,100)] \r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , names=['page_info'])\r\n",
+					"\r\n",
+					"df_page_rules = df_input[df_input['page_info'].str.contains('\\|')].copy()\r\n",
+					"df_page_rules.head()"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_page_updates = df_input[df_input['page_info'].str.contains(',')].copy()\r\n",
+					"df_page_updates.head()"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_page_rules[['i_page','j_page']] = df_page_rules['page_info'].str.split('|', expand=True)\r\n",
+					"df_page_rules[['i_page','j_page']] = df_page_rules[['i_page','j_page']].apply(pd.to_numeric)\r\n",
+					"df_page_rules.head()"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_page_updates['lenth'] = df_page_updates['page_info'].apply(len)\r\n",
+					"df_page_updates['lenth'].max()"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"max_length = 25\r\n",
+					"ix_pairs = []\r\n",
+					"\r\n",
+					"for i in range(max_length):\r\n",
+					"    for j in range(i):\r\n",
+					"        ix_pairs.append([j,i])\r\n",
+					"\r\n",
+					"df_ix_pairs = pd.DataFrame(ix_pairs, columns=['i', 'j'])\r\n",
+					"df_ix_pairs.head()"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def invalid_pairs(page_update_str, df_rules):\r\n",
+					"\r\n",
+					"    # Convert level_str to list of integers and then into a series and a data_frame\r\n",
+					"    df_page_update = pd.Series( [int(page) for page in page_update_str.split(',')] , name='page').to_frame()\r\n",
+					"    df_page_update.head()\r\n",
+					"\r\n",
+					"    df_page_update_i = pd.merge(df_page_update, df_ix_pairs, left_index=True, right_on='i')\r\n",
+					"    df_page_update_i.rename(columns={'page': 'page_i'}, inplace=True)\r\n",
+					"    df_page_update_ij = pd.merge(df_page_update, df_page_update_i, left_index=True, right_on='j')\r\n",
+					"    df_page_update_ij.rename(columns={'page': 'page_j'}, inplace=True)\r\n",
+					"\r\n",
+					"    df_checked = df_page_update_ij.merge(df_rules, how='left', left_on=['page_i','page_j'], right_on=['i_page','j_page'], indicator=True)\r\n",
+					"    \r\n",
+					"    #return df_checked\r\n",
+					"    # return the number of missmatched records (i.e. non zero is bad)\r\n",
+					"    return df_checked[df_checked['_merge'] == 'left_only']['_merge'].count()"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def mid_value(page_update_str):\r\n",
+					"\r\n",
+					"    # Convert level_str to list of integers and then into a series\r\n",
+					"    page_update = pd.Series( [int(page) for page in page_update_str.split(',')] , name='page')\r\n",
+					"\r\n",
+					"    mid_point = (len(page_update) + 1 )/2\r\n",
+					"    mid_point -= 1 # as zero based\r\n",
+					"    \r\n",
+					"    return page_update[mid_point]"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_page_updates['unmatched_pairs'] = df_page_updates['page_info'].apply(invalid_pairs, df_rules=df_page_rules)\r\n",
+					"\r\n",
+					"df_page_updates['mid_value'] = df_page_updates['page_info'].apply(mid_value)"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Part 1 answer"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_page_updates[df_page_updates['unmatched_pairs']==0]['mid_value'].sum()"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Part 2"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_invalid_page_updates = df_page_updates[df_page_updates['unmatched_pairs']>0].copy()\r\n",
+					"df_invalid_page_updates"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def sort_pair(lst_pairs, df_rules):\r\n",
+					"    for j in range(len(lst_pairs)):\r\n",
+					"        for i in range(j):\r\n",
+					"            val_i = lst_pairs[i]\r\n",
+					"            val_j = lst_pairs[j]\r\n",
+					"\r\n",
+					"            if (df_rules[(df_rules['i_page'] == val_j) & (df_rules['j_page'] == val_i)]['page_info'].count() == 1):\r\n",
+					"                #print(f\"i:{val_i} | j:{val_j} must swap\")\r\n",
+					"                lst_pairs.pop(j)\r\n",
+					"                lst_pairs.insert(i, val_j)\r\n",
+					"                return [True, lst_pairs]\r\n",
+					"\r\n",
+					"    return False, lst_pairs"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def sort_pairs(page_update_str, df_rules):\r\n",
+					"\r\n",
+					"    # Convert level_str to list of integers\r\n",
+					"    lst_page_update = [int(page) for page in page_update_str.split(',')]\r\n",
+					"\r\n",
+					"    not_sorted = True\r\n",
+					"    while not_sorted:\r\n",
+					"        #print (lst_page_update)\r\n",
+					"        not_sorted, lst_page_update = sort_pair(lst_pairs=lst_page_update, df_rules=df_rules)\r\n",
+					"\r\n",
+					"    return ','.join([str(page) for page in lst_page_update])"
+				],
+				"execution_count": 43
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"sorted_pages = sort_pairs(page_update_str='32,99,27,62,48,64,46,98,14',df_rules=df_page_rules)\r\n",
+					"print(sorted_pages)"
+				],
+				"execution_count": 44
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_invalid_page_updates[df_invalid_page_updates['lenth']==62]['page_info'].iloc[0]"
+				],
+				"execution_count": 47
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"lst = sort_pairs(page_update_str='89,91,55,62,98,93,51,45,23,85,83,86,43,32,27,64,67,36,61,46,77',df_rules=df_page_rules)\r\n",
+					"print(lst)"
+				],
+				"execution_count": 45
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_invalid_page_updates.head()"
+				],
+				"execution_count": 46
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_invalid_page_updates['sorted_pages'] = df_invalid_page_updates['page_info'].apply(sort_pairs, df_rules=df_page_rules)\r\n",
+					"df_invalid_page_updates.head()"
+				],
+				"execution_count": 56
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_invalid_page_updates['sorted_unmatched_pairs'] = df_invalid_page_updates['sorted_pages'].apply(invalid_pairs, df_rules=df_page_rules)\r\n",
+					"\r\n",
+					"df_invalid_page_updates['sorted_mid_value'] = df_invalid_page_updates['sorted_pages'].apply(mid_value)\r\n",
+					"\r\n",
+					"df_invalid_page_updates.head()"
+				],
+				"execution_count": 57
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_invalid_page_updates[df_invalid_page_updates['sorted_unmatched_pairs']>0]"
+				],
+				"execution_count": 58
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_invalid_page_updates[df_invalid_page_updates['sorted_unmatched_pairs']==0]['sorted_mid_value'].sum()"
+				],
+				"execution_count": 60
+			}
+		]
+	}
+}

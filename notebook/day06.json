@@ -1,0 +1,371 @@
+{
+	"name": "day06",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlbig",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 1,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "5de9b7f0-629f-415d-8d40-d23882698685"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlbig",
+				"name": "carlbig",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlbig",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"col_specs = []\r\n",
+					"\r\n",
+					"for i in range(130):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day06/input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"\r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"df_input.head(10)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"guard = df_input.stack()\r\n",
+					"#df = guard.unstack()\r\n",
+					"guard_xy = guard[guard == '^']\r\n",
+					"\r\n",
+					"guard_x = guard_xy.index[0][1]\r\n",
+					"guard_y = guard_xy.index[0][0]\r\n",
+					"guard_dir = 'U'\r\n",
+					"guard_step = 1\r\n",
+					"\r\n",
+					"print (f\"guard starting at (x:{guard_x}, y:{guard_y}) pointing {guard_dir} after {guard_step} steps\")"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#df_input.iloc[guard_y, guard_x] = 0"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def step(x_g, y_g, dir_g, df_plan, step_count, step_circular):\r\n",
+					"    if dir_g == 'U':\r\n",
+					"        x_m = 0\r\n",
+					"        y_m = -1\r\n",
+					"        dir_t = 'R'\r\n",
+					"    elif dir_g == 'R':\r\n",
+					"        x_m = 1\r\n",
+					"        y_m = 0\r\n",
+					"        dir_t = 'D'\r\n",
+					"    elif dir_g == 'D':\r\n",
+					"        x_m = 0\r\n",
+					"        y_m = 1\r\n",
+					"        dir_t = 'L'\r\n",
+					"    elif dir_g == 'L':\r\n",
+					"        x_m = -1\r\n",
+					"        y_m = 0\r\n",
+					"        dir_t = 'U'\r\n",
+					"\r\n",
+					"    if ((y_g + y_m < 0) or (x_g + x_m < 0) or (y_g + y_m > 129) or (x_g + x_m > 129)):\r\n",
+					"        # exit the room\r\n",
+					"        x_g += x_m\r\n",
+					"        y_g += y_m\r\n",
+					"    elif df_plan.iloc[y_g + y_m, x_g + x_m] == '#':\r\n",
+					"        # hit obstacle\r\n",
+					"        #print(f\"Hit at (x:{x_g}, y:{y_g})\")\r\n",
+					"        dir_g = dir_t\r\n",
+					"    elif df_plan.iloc[y_g + y_m, x_g + x_m][0] == dir_g:\r\n",
+					"        # complete circular\r\n",
+					"        #print(f\"Circuit at (x:{x_g}, y:{y_g})\")\r\n",
+					"        x_g += x_m\r\n",
+					"        y_g += y_m\r\n",
+					"        step_circular = True\r\n",
+					"    else:\r\n",
+					"        # step forwards\r\n",
+					"        #print(f\"Step at (x:{x_g}, y:{y_g})\")\r\n",
+					"        x_g += x_m\r\n",
+					"        y_g += y_m\r\n",
+					"        #df_plan.iloc[y_g + y_m, x_g + x_m]\r\n",
+					"        df_plan.iloc[y_g, x_g] = [dir_g, step_count]\r\n",
+					"        step_count += 1\r\n",
+					"\r\n",
+					"    return x_g, y_g, dir_g, df_plan, step_count, step_circular"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def walk(guard_x, guard_y, guard_dir, df_walk_route, walk_guard_step):\r\n",
+					"    circular = False\r\n",
+					"    while ((guard_x >= 0) and (guard_y >= 0) and (guard_x <= 129) and (guard_y <= 129) and (not(circular)) and (walk_guard_step < 10000)):\r\n",
+					"        guard_x, guard_y, guard_dir, df_walk_route, walk_guard_step, circular = step(x_g=guard_x, y_g=guard_y, dir_g=guard_dir, df_plan=df_walk_route, step_count=walk_guard_step, step_circular=circular)\r\n",
+					"\r\n",
+					"    return df_walk_route, circular"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_route, is_circular = walk(guard_x, guard_y, guard_dir, df_input.copy(), guard_step)\r\n",
+					"\r\n",
+					"#df_route.iloc[guard_y-12:guard_y+13, guard_x-3:guard_x+15] \r\n",
+					"df_route.iloc[15:45, 67:88] "
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_route.to_csv(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day06/df_route.csv\")\r\n",
+					"route = df_route.stack()\r\n",
+					"\r\n",
+					"visited_locations = route[[(location != '.' and location != '#') for location in route]]\r\n",
+					"len(visited_locations)"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_test2 = df_input.copy()\r\n",
+					"circular_count = 0\r\n",
+					"\r\n",
+					"# add in a new block\r\n",
+					"df_test2.iloc[35, 92] = '#'\r\n",
+					"# reset starting location\r\n",
+					"guard_x = guard_xy.index[0][1]\r\n",
+					"guard_y = guard_xy.index[0][0]\r\n",
+					"guard_dir = 'U'\r\n",
+					"guard_step = 1\r\n",
+					"# walk\r\n",
+					"df_route_2, is_circular = walk(guard_x, guard_y, guard_dir, df_test2, guard_step)\r\n",
+					"\r\n",
+					"if is_circular:\r\n",
+					"    circular_count += 1\r\n",
+					"\r\n",
+					"df_route_2.iloc[20:41, 78:96] "
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"is_circular"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"circular_count = 0\r\n",
+					"\r\n",
+					"for i in range(0,len(df_input.columns)-1):\r\n",
+					"    for j in range(0,df_input.shape[0]-1):\r\n",
+					"        if (df_input.iloc[i, j] == '.'):\r\n",
+					"            # copy the source\r\n",
+					"            df_attempt = df_input.copy()\r\n",
+					"\r\n",
+					"            # add in a new block\r\n",
+					"            df_attempt.iloc[i, j] = '#'\r\n",
+					"\r\n",
+					"            # reset starting location\r\n",
+					"            guard_x = guard_xy.index[0][1]\r\n",
+					"            guard_y = guard_xy.index[0][0]\r\n",
+					"            guard_dir = 'U'\r\n",
+					"            guard_step = 1\r\n",
+					"\r\n",
+					"            # walk\r\n",
+					"            df_route_2, is_circular = walk(guard_x, guard_y, guard_dir, df_attempt, guard_step)\r\n",
+					"\r\n",
+					"            if is_circular:\r\n",
+					"                # print (f\"circular route (x:{i}, y:{j})\")\r\n",
+					"                circular_count += 1\r\n",
+					""
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"circular_count"
+				],
+				"execution_count": 13
+			}
+		]
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"name": "synapse-ws-sql--asa-wks-carl-follows",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows",
+		"groupId": "sql",
+		"fqdns": [
+			"asa-wks-carl-follows.e77fc49b-fd5e-4dd7-a1ef-a81caca5f701.sql.azuresynapse.net"
+		]
+	}
+}

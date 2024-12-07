@@ -1,0 +1,230 @@
+{
+	"name": "day02_v2",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "25213502-0b30-48b1-884e-afdc08c6ab30"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 77
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input = pd.read_csv(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day02/input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , names=['levels'])\r\n",
+					"df_input.head(5)"
+				],
+				"execution_count": 79
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def Validate(level_str, skip_level):\r\n",
+					"\r\n",
+					"    # Convert level_str to list of integers and then into a series\r\n",
+					"    levels = pd.Series( [int(level) for level in level_str[0].split()] )\r\n",
+					"\r\n",
+					"    # remove the level to skip\r\n",
+					"    if skip_level > len(levels) - 1:\r\n",
+					"        return 99\r\n",
+					"    elif skip_level >= 0:\r\n",
+					"        levels = levels.drop([skip_level], axis=0).reset_index(drop=True)\r\n",
+					"\r\n",
+					"    # setup iteration\r\n",
+					"    prev_value = -9999\r\n",
+					"    prev_change = 0\r\n",
+					"    count_unsafe = 0\r\n",
+					"\r\n",
+					"    # iterate over levels\r\n",
+					"    for index, value in levels.items():\r\n",
+					"        if index == 0:\r\n",
+					"            prev_value = value\r\n",
+					"        elif index > 0:\r\n",
+					"            difference = value - prev_value\r\n",
+					"            # calculate direction 1 for increase, 0 for neutral and -1 for decrease\r\n",
+					"            change = int(difference / abs(difference)) if difference else 0 \r\n",
+					"\r\n",
+					"            # Show what's going on\r\n",
+					"            # print(f\"Index : {index}, Prev Value : {prev_value}, Value : {value}, Prev Change : {prev_change}, Change : {change}, Difference : {difference}, Count Unsafe : {count_unsafe}\")\r\n",
+					"\r\n",
+					"            # Not had any pervious unsafe readings\r\n",
+					"            # Not neutral direction\r\n",
+					"            # Not changing direction\r\n",
+					"            # Difference between 1 and 3\r\n",
+					"            if (count_unsafe <= 1) \\\r\n",
+					"                & (change != 0) \\\r\n",
+					"                & (abs(prev_change - change) < 2) \\\r\n",
+					"                & (abs(difference) in range(1,4)):\r\n",
+					"                #print(\"Safe\")\r\n",
+					"                prev_value = value\r\n",
+					"                prev_change = change\r\n",
+					"            else:\r\n",
+					"                #print(\"UnSafe\")\r\n",
+					"                count_unsafe += 1\r\n",
+					"\r\n",
+					"    return count_unsafe"
+				],
+				"execution_count": 166
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#df_input_to_validate = df_input.loc[4:4].head(5)\r\n",
+					"df_input_to_validate = df_input\r\n",
+					"\r\n",
+					"df_validate = pd.DataFrame()\r\n",
+					"df_validate['unsafe_all'] = df_input_to_validate.apply(Validate, skip_level=-1, axis=1)\r\n",
+					"df_validate['unsafe_skip_0'] = df_input_to_validate.apply(Validate, skip_level=0, axis=1)\r\n",
+					"df_validate['unsafe_skip_1'] = df_input_to_validate.apply(Validate, skip_level=1, axis=1)\r\n",
+					"df_validate['unsafe_skip_2'] = df_input_to_validate.apply(Validate, skip_level=2, axis=1)\r\n",
+					"df_validate['unsafe_skip_3'] = df_input_to_validate.apply(Validate, skip_level=3, axis=1)\r\n",
+					"df_validate['unsafe_skip_4'] = df_input_to_validate.apply(Validate, skip_level=4, axis=1)\r\n",
+					"df_validate['unsafe_skip_5'] = df_input_to_validate.apply(Validate, skip_level=5, axis=1)\r\n",
+					"df_validate['unsafe_skip_6'] = df_input_to_validate.apply(Validate, skip_level=6, axis=1)\r\n",
+					"df_validate['unsafe_skip_7'] = df_input_to_validate.apply(Validate, skip_level=7, axis=1)\r\n",
+					"df_validate['unsafe_skip_8'] = df_input_to_validate.apply(Validate, skip_level=8, axis=1)"
+				],
+				"execution_count": 174
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_results = pd.merge(df_input_to_validate, df_validate, left_index=True, right_index=True)\r\n",
+					"df_results['min'] = df_results.min(axis=1)\r\n",
+					"df_results.head()"
+				],
+				"execution_count": 175
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_results[df_results['min'] == 0]['levels'].count()"
+				],
+				"execution_count": 177
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}

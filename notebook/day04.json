@@ -1,0 +1,347 @@
+{
+	"name": "day04",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "85d6e973-f138-4fad-8cd4-2d6859eb8eed"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"col_specs = []\r\n",
+					"col_names = []\r\n",
+					"\r\n",
+					"for i in range(140):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day04/input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"\r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"df_input.head(10)"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input['Y'] = df_input.index\r\n",
+					"df_cords = df_input.melt(id_vars='Y', var_name='X', value_name='letter').set_index(['Y', 'X'])\r\n",
+					"df_cords"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"offsets = [(1,0),(1,1),(0,1),(-1,1),(-1,0),(-1,-1),(0,-1),(1,-1)]\r\n",
+					"offsets"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def search(df, offset):\r\n",
+					"    xo=offset[0]\r\n",
+					"    yo=offset[1]\r\n",
+					"\r\n",
+					"    df_xt = df.isin(['X'])\r\n",
+					"    df_x = df_xt[df_xt['letter'] == True]\r\n",
+					"    df_x.columns = [('letter_X')]\r\n",
+					"\r\n",
+					"    df_mt = df.isin(['M'])\r\n",
+					"    df_m = df_mt[df_mt['letter'] == True]\r\n",
+					"    df_m.columns = [('letter_M')]\r\n",
+					"    df_m.index = df_m.index.set_levels([df_m.index.levels[0] + xo, df_m.index.levels[1] + yo])\r\n",
+					"\r\n",
+					"    df_at = df.isin(['A'])\r\n",
+					"    df_a = df_at[df_at['letter'] == True]\r\n",
+					"    df_a.columns = [('letter_A')]\r\n",
+					"    df_a.index = df_a.index.set_levels([df_a.index.levels[0] + (2*xo), df_a.index.levels[1] + (2*yo)])\r\n",
+					"\r\n",
+					"    df_st = df.isin(['S'])\r\n",
+					"    df_s = df_st[df_st['letter'] == True]\r\n",
+					"    df_s.columns = [('letter_S')]\r\n",
+					"    df_s.index = df_s.index.set_levels([df_s.index.levels[0] + (3*xo), df_s.index.levels[1] + (3*yo)])\r\n",
+					"\r\n",
+					"    df_xm = pd.merge(df_x, df_m, left_index=True, right_index=True)\r\n",
+					"    df_xma = pd.merge(df_xm, df_a, left_index=True, right_index=True)\r\n",
+					"    df_xmas = pd.merge(df_xma, df_s, left_index=True, right_index=True)\r\n",
+					"\r\n",
+					"    found = df_xmas['letter_S'].count()\r\n",
+					"    \r\n",
+					"    print(f\"x:{xo} and y:{yo} found: {found}\")\r\n",
+					"    return found\r\n",
+					"\r\n",
+					"    "
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"found_total = 0\r\n",
+					"\r\n",
+					"for o in offsets:\r\n",
+					"    new_finds = search(df_cords, o)\r\n",
+					"    found_total = found_total + new_finds\r\n",
+					"\r\n",
+					"print(str(found_total))"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input.loc[[0,1,2,3,4,5],[18, 19, 20, 21, 22, 23]]"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"offsets2 = [((1,1),(1,-1)) \\\r\n",
+					"            ,((1,1),(-1,1)) \\\r\n",
+					"            ,((1,-1),(-1,-1)) \\\r\n",
+					"            ,((-1,-1),(-1,1)) ]\r\n",
+					"offsets2"
+				],
+				"execution_count": 31
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def search2(df, offset):\r\n",
+					"    m1=offset[0]\r\n",
+					"    m1_xo=m1[0]\r\n",
+					"    m1_yo=m1[1]\r\n",
+					"    m2=offset[1]\r\n",
+					"    m2_xo=m2[0]\r\n",
+					"    m2_yo=m2[1]\r\n",
+					"\r\n",
+					"    df_at = df.isin(['A'])\r\n",
+					"    df_a = df_at[df_at['letter'] == True]\r\n",
+					"    df_a.columns = [('letter_A')]\r\n",
+					"\r\n",
+					"    df_m1t = df.isin(['M'])\r\n",
+					"    df_m1 = df_m1t[df_m1t['letter'] == True]\r\n",
+					"    df_m1.columns = [('letter_M1')]\r\n",
+					"    df_m1.index = df_m1.index.set_levels([df_m1.index.levels[0] + m1_xo, df_m1.index.levels[1] + m1_yo])\r\n",
+					"\r\n",
+					"    df_s1t = df.isin(['S'])\r\n",
+					"    df_s1 = df_s1t[df_s1t['letter'] == True]\r\n",
+					"    df_s1.columns = [('letter_S1')]\r\n",
+					"    df_s1.index = df_s1.index.set_levels([df_s1.index.levels[0] - m1_xo, df_s1.index.levels[1] - m1_yo])\r\n",
+					"\r\n",
+					"    df_m2t = df.isin(['M'])\r\n",
+					"    df_m2 = df_m2t[df_m2t['letter'] == True]\r\n",
+					"    df_m2.columns = [('letter_M2')]\r\n",
+					"    df_m2.index = df_m2.index.set_levels([df_m2.index.levels[0] + m2_xo, df_m2.index.levels[1] + m2_yo])\r\n",
+					"\r\n",
+					"    df_s2t = df.isin(['S'])\r\n",
+					"    df_s2 = df_s2t[df_s2t['letter'] == True]\r\n",
+					"    df_s2.columns = [('letter_S2')]\r\n",
+					"    df_s2.index = df_s2.index.set_levels([df_s2.index.levels[0] - m2_xo, df_s2.index.levels[1] - m2_yo])\r\n",
+					"\r\n",
+					"    df_am1 = pd.merge(df_a, df_m1, left_index=True, right_index=True)\r\n",
+					"    df_am1s1 = pd.merge(df_am1, df_s1, left_index=True, right_index=True)\r\n",
+					"    df_am1s1m2 = pd.merge(df_am1s1, df_m2, left_index=True, right_index=True)\r\n",
+					"    df_am1s1m2s2 = pd.merge(df_am1s1m2, df_s2, left_index=True, right_index=True)\r\n",
+					"\r\n",
+					"    found = df_am1s1m2s2['letter_S2'].count()\r\n",
+					"\r\n",
+					"    print(f\"m1 x:{m1_xo} y:{m1_yo} with m2 x:{m2_xo} y:{m2_yo}  found: {found}\")\r\n",
+					"\r\n",
+					"    return found\r\n",
+					"\r\n",
+					"    "
+				],
+				"execution_count": 34
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"found_total = 0\r\n",
+					"\r\n",
+					"for o in offsets2:\r\n",
+					"    new_finds = search2(df_cords, o)\r\n",
+					"    found_total = found_total + new_finds\r\n",
+					"\r\n",
+					"print(str(found_total))\r\n",
+					""
+				],
+				"execution_count": 35
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}

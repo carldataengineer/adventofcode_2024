@@ -1,0 +1,369 @@
+{
+	"name": "day02",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "0df9a75d-8cd2-410d-b51a-c4e399379cd8"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 59
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input = pd.read_csv(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day02/input.txt\"\\\r\n",
+					"                    , delimiter= '\\s+'\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , names=['level_1', 'level_2', 'level_3', 'level_4', 'level_5', 'level_6', 'level_7', 'level_8'])\r\n",
+					"df_input.head(5)"
+				],
+				"execution_count": 60
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input.count()"
+				],
+				"execution_count": 61
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_difference = pd.DataFrame()\r\n",
+					"df_difference['1to2'] = df_input['level_1'] - df_input['level_2']\r\n",
+					"df_difference['2to3'] = df_input['level_2'] - df_input['level_3']\r\n",
+					"df_difference['3to4'] = df_input['level_3'] - df_input['level_4']\r\n",
+					"df_difference['4to5'] = df_input['level_4'] - df_input['level_5']\r\n",
+					"df_difference['5to6'] = df_input['level_5'] - df_input['level_6']\r\n",
+					"df_difference['6to7'] = df_input['level_6'] - df_input['level_7']\r\n",
+					"df_difference['7to8'] = df_input['level_7'] - df_input['level_8']\r\n",
+					"\r\n",
+					"df_difference.head(5)"
+				],
+				"execution_count": 62
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_agg = pd.DataFrame()\r\n",
+					"df_agg['min'] = df_difference.min(axis=1)\r\n",
+					"df_agg['max'] = df_difference.max(axis=1)\r\n",
+					"df_agg['multiplier'] = df_agg['min'] * df_agg['max']\r\n",
+					"\r\n",
+					"df_agg.head()"
+				],
+				"execution_count": 63
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_safe_increasing = df_agg[(df_agg['multiplier'] > 0) \\\r\n",
+					"                    & (df_agg['min'] >= -3) \\\r\n",
+					"                    & (df_agg['max'] <= -1)]\r\n",
+					"\r\n",
+					"#df_safe_increasing.head()\r\n",
+					"\r\n",
+					"df_safe_decreasing = df_agg[(df_agg['multiplier'] > 0) \\\r\n",
+					"                    & (df_agg['min'] >= 1) \\\r\n",
+					"                    & (df_agg['max'] <= 3)]\r\n",
+					"\r\n",
+					"df_safe_decreasing.head()"
+				],
+				"execution_count": 64
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_safe_increasing['multiplier'].count() + df_safe_decreasing['multiplier'].count()"
+				],
+				"execution_count": 65
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_input.head()"
+				],
+				"execution_count": 66
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def Validate(levels):\r\n",
+					"\r\n",
+					"    # Setup\r\n",
+					"    levels = levels.dropna().reset_index(drop=True).astype(int)\r\n",
+					"    prev_value = -9999\r\n",
+					"    prev_change = 0\r\n",
+					"    count_unsafe = 0\r\n",
+					"\r\n",
+					"    # Iterate over levels\r\n",
+					"    for index, value in levels.items():\r\n",
+					"        if index == 0:\r\n",
+					"            prev_value = value\r\n",
+					"        elif index > 0:\r\n",
+					"            difference = value - prev_value\r\n",
+					"            # calculate direction 1 for increase, 0 for neutral and -1 for decrease\r\n",
+					"            change = int(difference / abs(difference)) if difference else 0 \r\n",
+					"\r\n",
+					"            # Show what's going on\r\n",
+					"            # print(f\"Index : {index}, Prev Value : {prev_value}, Value : {value}, Prev Change : {prev_change}, Change : {change}, Difference : {difference}, Count Unsafe : {count_unsafe}\")\r\n",
+					"\r\n",
+					"            # Not had any pervious unsafe readings\r\n",
+					"            # Not neutral direction\r\n",
+					"            # Not changing direction\r\n",
+					"            # Difference between 1 and 3\r\n",
+					"            if (count_unsafe <= 1) \\\r\n",
+					"                & (change != 0) \\\r\n",
+					"                & (abs(prev_change - change) < 2) \\\r\n",
+					"                & (abs(difference) in range(1,4)):\r\n",
+					"                #print(\"Safe\")\r\n",
+					"                prev_value = value\r\n",
+					"                prev_change = change\r\n",
+					"            else:\r\n",
+					"                #print(\"UnSafe\")\r\n",
+					"                count_unsafe += 1\r\n",
+					"\r\n",
+					"    return count_unsafe"
+				],
+				"execution_count": 67
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_validate = pd.DataFrame()\r\n",
+					"df_validate['result'] = df_input.apply(Validate, axis=1)\r\n",
+					"\r\n",
+					"df_results = pd.merge(df_input, df_validate, left_index=True, right_index=True)\r\n",
+					"df_results[df_results['result'] > 1].head()"
+				],
+				"execution_count": 75
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_results[df_results['result'] <= 1]['result'].count()"
+				],
+				"execution_count": 70
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_failed = df_results[df_results['result'] > 1].iloc[:,1:8]\r\n",
+					"df_failed.head()\r\n",
+					"\r\n",
+					"df_validate_2 = pd.DataFrame()\r\n",
+					"df_validate_2['result'] = df_failed.apply(Validate, axis=1)\r\n",
+					"\r\n",
+					"df_results_2 = pd.merge(df_failed, df_validate_2, left_index=True, right_index=True)\r\n",
+					"df_results_2[df_results_2['result'] > 1].head()"
+				],
+				"execution_count": 76
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_results_2[df_results_2['result'] < 1]['result'].count()"
+				],
+				"execution_count": 74
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}
