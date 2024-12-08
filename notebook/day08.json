@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f7b315ab-9cfb-4960-a581-9f44e5c5f38b"
+				"spark.autotune.trackingId": "9b4731e8-1229-4289-9003-1e10e5811ffd"
 			}
 		},
 		"metadata": {
@@ -71,11 +71,11 @@
 				"source": [
 					"col_specs = []\r\n",
 					"\r\n",
-					"#for i in range(50):\r\n",
-					"for i in range(12):\r\n",
+					"for i in range(50):\r\n",
+					"#for i in range(12):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day08/test_input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day08/input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -86,7 +86,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(50)"
 				],
-				"execution_count": null
+				"execution_count": 31
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"df_antenna['loc_id'] = df_antenna.index\r\n",
 					"df_antenna.head(10)"
 				],
-				"execution_count": null
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -129,7 +129,7 @@
 					"df_antenna_type.columns = ['count']\r\n",
 					"df_antenna_type.head()"
 				],
-				"execution_count": null
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
@@ -151,7 +151,7 @@
 					"df_ant_pairs_raw = df_ant_pairs.copy()\r\n",
 					"df_ant_pairs.head(10)"
 				],
-				"execution_count": null
+				"execution_count": 34
 			},
 			{
 				"cell_type": "code",
@@ -189,7 +189,7 @@
 					"\r\n",
 					"df_anti_node.head(20)"
 				],
-				"execution_count": null
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
@@ -207,7 +207,7 @@
 				"source": [
 					"df_anti_node.to_csv(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day08/df_anti_node.csv\")"
 				],
-				"execution_count": null
+				"execution_count": 36
 			},
 			{
 				"cell_type": "code",
@@ -228,7 +228,7 @@
 					"\r\n",
 					"df_input"
 				],
-				"execution_count": null
+				"execution_count": 37
 			},
 			{
 				"cell_type": "code",
@@ -247,7 +247,7 @@
 					"df_unique_anti_node = df_anti_node.groupby(['anti_node_x', 'anti_node_y'])['antenna'].count().reset_index()\r\n",
 					"df_unique_anti_node.shape[0]"
 				],
-				"execution_count": null
+				"execution_count": 38
 			},
 			{
 				"cell_type": "code",
@@ -270,7 +270,7 @@
 					"    #for an_i, an_row in df_anti_node[df_anti_node['antenna'] == antenna].iterrows():\r\n",
 					"        #print(f\"      node x:{an_row['anti_node_x']}  y:{an_row['anti_node_y']}\")"
 				],
-				"execution_count": null
+				"execution_count": 39
 			},
 			{
 				"cell_type": "markdown",
@@ -305,7 +305,7 @@
 					"df_ant_pairs_p2['diff_y'] = df_ant_pairs['y_right'] - df_ant_pairs['y_left']\r\n",
 					"df_ant_pairs_p2.head(20)"
 				],
-				"execution_count": null
+				"execution_count": 40
 			},
 			{
 				"cell_type": "code",
@@ -325,24 +325,23 @@
 					"\r\n",
 					"df_anti_node_p2 = pd.DataFrame(columns=['antenna', 'anti_node_x', 'anti_node_y'])\r\n",
 					"\r\n",
-					"for j in range(1):\r\n",
-					"    print(f\"Working on row {j}\")\r\n",
+					"for j in range(0, 50):\r\n",
+					"    #print(f\"Working on row {j}\")\r\n",
 					"\r\n",
 					"    df_ant_pairs_p2['anti_node_1_x'] = df_ant_pairs['x_right'] + j * df_ant_pairs_p2['diff_x'] \r\n",
 					"    df_ant_pairs_p2['anti_node_1_y'] = df_ant_pairs['y_right'] + j * df_ant_pairs_p2['diff_y'] \r\n",
-					"    df_ant_pairs_p2['anti_node_2_x'] = df_ant_pairs['x_left'] - j * df_ant_pairs_p2['diff_x'] \r\n",
-					"    df_ant_pairs_p2['anti_node_2_y'] = df_ant_pairs['y_left'] - j * df_ant_pairs_p2['diff_y'] \r\n",
-					"\r\n",
 					"    df_ant_pairs_1 = df_ant_pairs_p2[['antenna', 'anti_node_1_x', 'anti_node_1_y']].copy()\r\n",
 					"    df_ant_pairs_1.columns = ['antenna', 'anti_node_x', 'anti_node_y']\r\n",
 					"    df_anti_node_p2 = pd.concat([df_anti_node_p2, df_ant_pairs_1], ignore_index=True)\r\n",
 					"\r\n",
+					"    df_ant_pairs_p2['anti_node_2_x'] = df_ant_pairs['x_left'] - j * df_ant_pairs_p2['diff_x'] \r\n",
+					"    df_ant_pairs_p2['anti_node_2_y'] = df_ant_pairs['y_left'] - j * df_ant_pairs_p2['diff_y'] \r\n",
 					"    df_ant_pairs_2 = df_ant_pairs_p2[['antenna', 'anti_node_2_x', 'anti_node_2_y']].copy()\r\n",
 					"    df_ant_pairs_2.columns = ['antenna', 'anti_node_x', 'anti_node_y']\r\n",
 					"    df_anti_node_p2 = pd.concat([df_anti_node_p2, df_ant_pairs_2], ignore_index=True)\r\n",
 					"   "
 				],
-				"execution_count": null
+				"execution_count": 48
 			},
 			{
 				"cell_type": "code",
@@ -366,7 +365,7 @@
 					"\r\n",
 					"df_anti_node_p2.head()                            "
 				],
-				"execution_count": null
+				"execution_count": 49
 			},
 			{
 				"cell_type": "code",
@@ -384,6 +383,63 @@
 				"source": [
 					"df_unique_anti_node_p2 = df_anti_node_p2.groupby(['anti_node_x', 'anti_node_y'])['antenna'].count().reset_index()\r\n",
 					"df_unique_anti_node_p2.shape[0]"
+				],
+				"execution_count": 50
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"for i, row in df_anti_node_p2.iterrows():\r\n",
+					"    df_input.iloc[row['anti_node_y'], row['anti_node_x']] = '#'\r\n",
+					"\r\n",
+					"df_input"
+				],
+				"execution_count": 51
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
 				],
 				"execution_count": null
 			}
