@@ -1,0 +1,187 @@
+{
+	"name": "day08",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "5bd1bfdf-bf8e-4d56-b6b7-4c548f411438"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 55
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"col_specs = []\r\n",
+					"\r\n",
+					"for i in range(12):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day08/test_input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"                    \r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"df_input.head(12)"
+				],
+				"execution_count": 56
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_locations = df_input.stack().to_frame().rename_axis(index=('y','x'))\r\n",
+					"df_locations.columns = ['antenna']\r\n",
+					"\r\n",
+					"df_antenna = df_locations[df_locations['antenna'] != '.'].reset_index()\r\n",
+					"df_antenna.head(10)"
+				],
+				"execution_count": 74
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"for antenna in df_antenna.index.unique():\r\n",
+					"    print (f\"antenna: {antenna}\")"
+				],
+				"execution_count": 64
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_antenna_type = df_antenna.groupby('antenna')['x'].count().reset_index().set_index('antenna')\r\n",
+					"df_antenna_type.columns = ['count']\r\n",
+					"df_antenna_type.head()"
+				],
+				"execution_count": 84
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"for antenna, row in df_antenna_type.iterrows():\r\n",
+					"    print (f\"Antenna type:{antenna} has {row['count']} instances\")"
+				],
+				"execution_count": 101
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
