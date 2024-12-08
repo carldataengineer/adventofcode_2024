@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "5bd1bfdf-bf8e-4d56-b6b7-4c548f411438"
+				"spark.autotune.trackingId": "827c6a7a-2ca4-4a60-99ed-550faf92a4a4"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 55
+				"execution_count": 100
 			},
 			{
 				"cell_type": "code",
@@ -71,18 +71,21 @@
 				"source": [
 					"col_specs = []\r\n",
 					"\r\n",
-					"for i in range(12):\r\n",
+					"for i in range(50):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day08/test_input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day08/input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
-					"                    \r\n",
+					"\r\n",
+					"x_max = len(df_input.columns)\r\n",
+					"y_max = df_input.shape[0]\r\n",
+					"\r\n",
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
-					"df_input.head(12)"
+					"df_input.head(5)"
 				],
-				"execution_count": 56
+				"execution_count": 101
 			},
 			{
 				"cell_type": "code",
@@ -102,28 +105,10 @@
 					"df_locations.columns = ['antenna']\r\n",
 					"\r\n",
 					"df_antenna = df_locations[df_locations['antenna'] != '.'].reset_index()\r\n",
+					"df_antenna['loc_id'] = df_antenna.index\r\n",
 					"df_antenna.head(10)"
 				],
-				"execution_count": 74
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"for antenna in df_antenna.index.unique():\r\n",
-					"    print (f\"antenna: {antenna}\")"
-				],
-				"execution_count": 64
+				"execution_count": 102
 			},
 			{
 				"cell_type": "code",
@@ -143,7 +128,85 @@
 					"df_antenna_type.columns = ['count']\r\n",
 					"df_antenna_type.head()"
 				],
-				"execution_count": 84
+				"execution_count": 103
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_ant_pairs = pd.merge(df_antenna, df_antenna, on='antenna', suffixes=['_left','_right'])\r\n",
+					"df_ant_pairs = df_ant_pairs[df_ant_pairs['loc_id_left'] > df_ant_pairs['loc_id_right']]\r\n",
+					"df_ant_pairs = df_ant_pairs[['antenna', 'x_left', 'y_left', 'x_right', 'y_right']].copy()\r\n",
+					"df_ant_pairs.head(10)"
+				],
+				"execution_count": 104
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# calculate anti node locations\r\n",
+					"df_ant_pairs['anti_node_1_x'] = 2*df_ant_pairs['x_left'] - df_ant_pairs['x_right']\r\n",
+					"df_ant_pairs['anti_node_1_y'] = 2*df_ant_pairs['y_left'] - df_ant_pairs['y_right']\r\n",
+					"df_ant_pairs['anti_node_2_x'] = 2*df_ant_pairs['x_right'] - df_ant_pairs['x_left']\r\n",
+					"df_ant_pairs['anti_node_2_y'] = 2*df_ant_pairs['y_right'] - df_ant_pairs['y_left']\r\n",
+					"df_ant_pairs.head(10)\r\n",
+					"\r\n",
+					"# stack\r\n",
+					"df_ant_pairs_1 = df_ant_pairs[['antenna', 'anti_node_1_x', 'anti_node_1_y']].copy()\r\n",
+					"df_ant_pairs_1.columns = ['antenna', 'anti_node_x', 'anti_node_y']\r\n",
+					"df_ant_pairs_2 = df_ant_pairs[['antenna', 'anti_node_2_x', 'anti_node_2_y']].copy()\r\n",
+					"df_ant_pairs_2.columns = ['antenna', 'anti_node_x', 'anti_node_y']\r\n",
+					"df_anti_node = pd.concat([df_ant_pairs_1, df_ant_pairs_2], ignore_index=False)\r\n",
+					"\r\n",
+					"# filter to inside the grid\r\n",
+					"df_anti_node = df_anti_node[(df_anti_node['anti_node_x'] >= 0)\r\n",
+					"                            & (df_anti_node['anti_node_y'] >= 0)\r\n",
+					"                            & (df_anti_node['anti_node_x'] <= x_max)\r\n",
+					"                            & (df_anti_node['anti_node_y'] <= y_max)]\r\n",
+					"\r\n",
+					"df_anti_node.head(20)"
+				],
+				"execution_count": 105
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_unique_anti_node = df_anti_node.groupby(['anti_node_x', 'anti_node_y'])['antenna'].count().reset_index()\r\n",
+					"df_unique_anti_node.shape[0]"
+				],
+				"execution_count": 106
 			},
 			{
 				"cell_type": "code",
@@ -160,9 +223,12 @@
 				},
 				"source": [
 					"for antenna, row in df_antenna_type.iterrows():\r\n",
-					"    print (f\"Antenna type:{antenna} has {row['count']} instances\")"
+					"    print (f\"Antenna type:{antenna} has {row['count']} instances\")\r\n",
+					"\r\n",
+					"    for an_i, an_row in df_anti_node[df_anti_node['antenna'] == antenna].iterrows():\r\n",
+					"        print(f\"      node x:{an_row['anti_node_x']}  y:{an_row['anti_node_y']}\")"
 				],
-				"execution_count": 101
+				"execution_count": 107
 			},
 			{
 				"cell_type": "code",
@@ -178,9 +244,10 @@
 					}
 				},
 				"source": [
-					""
+					"def loocate_antinodes(type, df_loc):\r\n",
+					"    print(df_antenna)"
 				],
-				"execution_count": null
+				"execution_count": 108
 			}
 		]
 	}
