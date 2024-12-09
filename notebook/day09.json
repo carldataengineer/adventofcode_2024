@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e2ef85cd-99d0-49b5-b9a8-f62010adf6d7"
+				"spark.autotune.trackingId": "37209e2f-c8bd-4325-84e5-c095baa09b36"
 			}
 		},
 		"metadata": {
@@ -207,10 +207,9 @@
 					"df_swap_free_spaces = df_free_spaces[df_free_spaces.index < max_file_block].copy()\r\n",
 					"df_swap_free_spaces.reset_index(inplace=True)\r\n",
 					"df_swap_free_spaces['free_space_id'] = df_swap_free_spaces.index\r\n",
-					"df_swap_free_spaces.set_index('space_id', inplace=True)\r\n",
 					"df_swap_free_spaces.head(20)"
 				],
-				"execution_count": 90
+				"execution_count": 94
 			},
 			{
 				"cell_type": "code",
@@ -226,10 +225,74 @@
 					}
 				},
 				"source": [
-					"df_swap_spaces = df_swap_free_spaces.merge(df_files, how='left', left_on='free_space_id', right_on='rev_file_space_id', suffixes=('_free', '_file'))\r\n",
+					"df_swap_spaces = df_swap_free_spaces.merge(df_files, how='left', left_on='free_space_id', right_on='rev_file_space_id', suffixes=('', '_file'))\r\n",
+					"df_swap_spaces = df_swap_spaces[['space_id', 'space_usage_file']]\r\n",
+					"df_swap_spaces.set_index('space_id', inplace=True)\r\n",
 					"df_swap_spaces.head(20)"
 				],
-				"execution_count": 91
+				"execution_count": 98
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def update_space(space):\r\n",
+					"    if space['space_usage'] == '.':\r\n",
+					"        return space['space_usage_file']\r\n",
+					"    else:\r\n",
+					"        return space['space_usage']"
+				],
+				"execution_count": 105
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_defrag = df_disk_usage[df_disk_usage.index < max_file_block]\r\n",
+					"df_defrag = df_defrag.merge(df_swap_spaces, how='left', left_index=True, right_index=True, suffixes=('', '_swap'))\r\n",
+					"df_defrag['updated_space'] = df_defrag.apply(update_space, axis=1)\r\n",
+					"df_defrag['checksum'] = df_defrag.index * df_defrag['updated_space']\r\n",
+					"df_defrag.head(30)"
+				],
+				"execution_count": 107
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_defrag['checksum'].sum()"
+				],
+				"execution_count": 108
 			},
 			{
 				"cell_type": "code",
