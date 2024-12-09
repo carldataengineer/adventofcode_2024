@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "fd8d488e-0f71-4ceb-8484-36ce90cea2ec"
+				"spark.autotune.trackingId": "74573cb5-5d87-40b8-8b16-cedbad2d3c45"
 			}
 		},
 		"metadata": {
@@ -96,7 +96,7 @@
 					"disk_map = str(df_input.iloc[0,0])\r\n",
 					"df_disk_map = pd.DataFrame(list(disk_map), columns=['block'])\r\n",
 					"df_disk_map.index.name = 'id_num'\r\n",
-					"df_disk_map.head()"
+					"df_disk_map"
 				],
 				"execution_count": 63
 			},
@@ -162,6 +162,44 @@
 					"df_disk_usage.head(20)"
 				],
 				"execution_count": 67
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"for i, b in df_disk_usage.iterrows():\r\n",
+					"    if b['block_usage'] == '.':\r\n",
+					"        df_disk_usage.iloc(i) = 'fixed'"
+				],
+				"execution_count": 73
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_disk_usage.head()"
+				],
+				"execution_count": 74
 			},
 			{
 				"cell_type": "code",
