@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "33976a7a-6f4e-4b10-956d-d0479f2d60d9"
+				"spark.autotune.trackingId": "4a274108-c23d-47e1-a2d7-c93c4ebf584d"
 			}
 		},
 		"metadata": {
@@ -54,7 +54,7 @@
 					"import pandas as pd\r\n",
 					"import math"
 				],
-				"execution_count": 121
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -70,14 +70,14 @@
 					}
 				},
 				"source": [
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day09/input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day09/test_input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , names=['disk_map'])\r\n",
 					"\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 122
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -98,7 +98,7 @@
 					"df_disk_map.index.name = 'map_id'\r\n",
 					"df_disk_map"
 				],
-				"execution_count": 123
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -121,7 +121,7 @@
 					"    else:\r\n",
 					"        return ['.'] * int(disk_digit['digit'])"
 				],
-				"execution_count": 124
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -140,7 +140,7 @@
 					"df_disk_map['block_usage'] = df_disk_map.apply(map_digit, axis=1)\r\n",
 					"df_disk_map"
 				],
-				"execution_count": 133
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -163,7 +163,7 @@
 					"df_disk_usage.index.name = 'space_id'\r\n",
 					"df_disk_usage.head(30)"
 				],
-				"execution_count": 145
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -188,7 +188,7 @@
 					"#df_files.iloc[50000:50050,:]\r\n",
 					"df_files"
 				],
-				"execution_count": 142
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -210,7 +210,7 @@
 					"df_swap_free_spaces['free_space_id'] = df_swap_free_spaces.index\r\n",
 					"df_swap_free_spaces"
 				],
-				"execution_count": 158
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -231,7 +231,7 @@
 					"df_swap_spaces.set_index('space_id', inplace=True)\r\n",
 					"df_swap_spaces"
 				],
-				"execution_count": 159
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -253,7 +253,7 @@
 					"    else:\r\n",
 					"        return space['space_usage']"
 				],
-				"execution_count": 160
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -275,7 +275,7 @@
 					"df_defrag['checksum'] = df_defrag.index * df_defrag['updated_space']\r\n",
 					"df_defrag"
 				],
-				"execution_count": 161
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -293,7 +293,20 @@
 				"source": [
 					"df_defrag['checksum'].sum()"
 				],
-				"execution_count": 162
+				"execution_count": 12
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"part 2"
+				]
 			},
 			{
 				"cell_type": "code",
@@ -309,9 +322,9 @@
 					}
 				},
 				"source": [
-					""
+					"df_disk_map_2 = df_disk_map.copy()"
 				],
-				"execution_count": null
+				"execution_count": 40
 			},
 			{
 				"cell_type": "code",
@@ -327,9 +340,65 @@
 					}
 				},
 				"source": [
-					""
+					"def is_file(disk_digit):\r\n",
+					"    if (int(disk_digit.name) % 2 == 0):\r\n",
+					"        return True\r\n",
+					"    else:\r\n",
+					"        return False"
 				],
-				"execution_count": null
+				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_disk_map_2['is_file'] = df_disk_map_2.apply(is_file, axis=1)\r\n",
+					"df_disk_map_2.rename(columns={'digit': 'block_size'}, inplace=True)\r\n",
+					"df_disk_map_2"
+				],
+				"execution_count": 42
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_processing = df_disk_map_2.copy()\r\n",
+					"\r\n",
+					"#for i in reversed(df_processing[df_processing['is_file'] == True].index):\r\n",
+					"for i in range(18, 17, -1):\r\n",
+					"\r\n",
+					"    file_size = df_processing.loc[i, 'block_size']\r\n",
+					"    file = df_processing.loc[i, 'block_usage']\r\n",
+					"\r\n",
+					"    df_available_spaces = df_processing[(df_processing['block_size'] >= str(file_size)) \r\n",
+					"                                        & (df_processing['is_file'] == False)\r\n",
+					"                                        & (df_processing.index < i)]\r\n",
+					"    if df_available_spaces.shape[0] > 0:\r\n",
+					"        idx_space = df_available_spaces.index[0]\r\n",
+					"    \r\n",
+					"        print(f\"processing space id: {i} containing: {file}, need {file_size} spaces, found {idx_space}\")"
+				],
+				"execution_count": 74
 			}
 		]
 	}
