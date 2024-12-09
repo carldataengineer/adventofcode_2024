@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "4a274108-c23d-47e1-a2d7-c93c4ebf584d"
+				"spark.autotune.trackingId": "200f414a-7a3a-45cd-92ee-15c41a1fba6b"
 			}
 		},
 		"metadata": {
@@ -324,7 +324,7 @@
 				"source": [
 					"df_disk_map_2 = df_disk_map.copy()"
 				],
-				"execution_count": 40
+				"execution_count": 122
 			},
 			{
 				"cell_type": "code",
@@ -346,7 +346,7 @@
 					"    else:\r\n",
 					"        return False"
 				],
-				"execution_count": 41
+				"execution_count": 123
 			},
 			{
 				"cell_type": "code",
@@ -364,9 +364,12 @@
 				"source": [
 					"df_disk_map_2['is_file'] = df_disk_map_2.apply(is_file, axis=1)\r\n",
 					"df_disk_map_2.rename(columns={'digit': 'block_size'}, inplace=True)\r\n",
+					"df_disk_map_2['block_size'] = df_disk_map_2['block_size'].astype('int64')\r\n",
+					"#df_disk_map_2['rev_map_id'] = - df_disk_map_2.index + df_disk_map_2.shape[0] - 1\r\n",
+					"#df_disk_map_2.set_index('rev_map_id', inplace=True)\r\n",
 					"df_disk_map_2"
 				],
-				"execution_count": 42
+				"execution_count": 124
 			},
 			{
 				"cell_type": "code",
@@ -382,23 +385,96 @@
 					}
 				},
 				"source": [
-					"df_processing = df_disk_map_2.copy()\r\n",
-					"\r\n",
+					"df_processing = df_disk_map_2.copy()"
+				],
+				"execution_count": 125
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
 					"#for i in reversed(df_processing[df_processing['is_file'] == True].index):\r\n",
-					"for i in range(18, 17, -1):\r\n",
+					"for i in range(18,17,-1):\r\n",
 					"\r\n",
 					"    file_size = df_processing.loc[i, 'block_size']\r\n",
 					"    file = df_processing.loc[i, 'block_usage']\r\n",
 					"\r\n",
-					"    df_available_spaces = df_processing[(df_processing['block_size'] >= str(file_size)) \r\n",
+					"    df_available_spaces = df_processing[(df_processing['block_size'] >= file_size) \r\n",
 					"                                        & (df_processing['is_file'] == False)\r\n",
 					"                                        & (df_processing.index < i)]\r\n",
 					"    if df_available_spaces.shape[0] > 0:\r\n",
 					"        idx_space = df_available_spaces.index[0]\r\n",
+					"        space_size = df_processing.loc[idx_space, 'block_size']\r\n",
+					"        if space_size > file_size:\r\n",
+					"            df_new = pd.DataFrame({\r\n",
+					"                                    'block_size': [file_size, space_size-file_size],\r\n",
+					"                                    'block_usage': [file, ['.']],\r\n",
+					"                                    'is_file' : [True, False]\r\n",
+					"                                })\r\n",
+					"        else:\r\n",
+					"            df_new = pd.DataFrame({\r\n",
+					"                                    'block_size': [file_size],\r\n",
+					"                                    'block_usage': [file],\r\n",
+					"                                    'is_file' : [True]\r\n",
+					"                                })\r\n",
 					"    \r\n",
-					"        print(f\"processing space id: {i} containing: {file}, need {file_size} spaces, found {idx_space}\")"
+					"        df_old = pd.DataFrame({\r\n",
+					"                                    'block_size': [file_size],\r\n",
+					"                                    'block_usage': [['.'] * file_size],\r\n",
+					"                                    'is_file' : [False]\r\n",
+					"                                })\r\n",
+					"\r\n",
+					"        print(f\"processing space id: {i} containing: {file}, need {file_size} spaces, found {idx_space} of size {space_size}\")\r\n",
+					"        df_processing = pd.concat([df_processing.iloc[:i], df_old, df_processing.iloc[i+1:]]).reset_index(drop=True)\r\n",
+					"        df_processing = pd.concat([df_processing.iloc[:idx_space], df_new, df_processing.iloc[idx_space+1:]]).reset_index(drop=True)"
 				],
-				"execution_count": 74
+				"execution_count": 126
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_processing"
+				],
+				"execution_count": 127
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
 			}
 		]
 	}
