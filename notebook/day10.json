@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2b507441-73c3-46ee-ac77-586e58709ac9"
+				"spark.autotune.trackingId": "904203f9-6630-4ced-a630-bed86e5ce7f6"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 15
+				"execution_count": 28
 			},
 			{
 				"cell_type": "code",
@@ -82,7 +82,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 16
+				"execution_count": 29
 			},
 			{
 				"cell_type": "code",
@@ -110,7 +110,7 @@
 					"\r\n",
 					"df_trailheads.head()"
 				],
-				"execution_count": 17
+				"execution_count": 30
 			},
 			{
 				"cell_type": "code",
@@ -136,7 +136,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 18
+				"execution_count": 31
 			},
 			{
 				"cell_type": "code",
@@ -162,52 +162,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 19
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_routes = df_trailheads[['trailhead_id', 'x', 'y', 'height']].copy()\r\n",
-					"\r\n",
-					"df_routes['direction'] = [['u','d','l','r']] * df_routes.shape[0]\r\n",
-					"df_routes = df_routes.explode('direction')\r\n",
-					"df_routes['x_step'] = df_routes.apply(x_step, axis=1)\r\n",
-					"df_routes['y_step'] = df_routes.apply(y_step, axis=1)\r\n",
-					"df_routes.head(20)"
-				],
-				"execution_count": 20
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_new_route = df_routes.merge(df_coord[df_coord['height'] == 1].copy(), how='inner', left_on=['x_step','y_step'], right_on=['x','y'], suffixes=('', '_stepped'))\r\n",
-					"df_new_route = df_new_route[['trailhead_id', 'x_stepped', 'y_stepped', 'height_stepped']]\r\n",
-					"df_new_route.columns = ('trailhead_id', 'x', 'y', 'height')\r\n",
-					"df_new_route.head(20)"
-				],
-				"execution_count": 21
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -239,7 +194,7 @@
 					"\r\n",
 					"    df_routes = df_new_route"
 				],
-				"execution_count": 22
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
@@ -257,7 +212,7 @@
 				"source": [
 					"df_routes.head(20)"
 				],
-				"execution_count": 23
+				"execution_count": 34
 			},
 			{
 				"cell_type": "code",
@@ -275,27 +230,9 @@
 				"source": [
 					"df_trailhead_scores = df_routes.groupby(['trailhead_id','x','y']).size().to_frame().groupby(['trailhead_id']).size().to_frame()\r\n",
 					"df_trailhead_scores.columns = ['score']\r\n",
-					"df_trailhead_scores.head(20)"
-				],
-				"execution_count": 24
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
 					"df_trailhead_scores['score'].sum()"
 				],
-				"execution_count": 25
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
@@ -313,45 +250,9 @@
 				"source": [
 					"df_trailhead_scores = df_routes.groupby(['trailhead_id']).size().to_frame()\r\n",
 					"df_trailhead_scores.columns = ['score']\r\n",
-					"df_trailhead_scores.head(20)"
-				],
-				"execution_count": 26
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
 					"df_trailhead_scores['score'].sum()"
 				],
-				"execution_count": 27
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					""
-				],
-				"execution_count": null
+				"execution_count": 36
 			}
 		]
 	}
