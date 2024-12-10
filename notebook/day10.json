@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "9691a64b-9bcf-46e8-8f64-77bfb9ecec62"
+				"spark.autotune.trackingId": "2b507441-73c3-46ee-ac77-586e58709ac9"
 			}
 		},
 		"metadata": {
@@ -296,6 +296,44 @@
 					"df_trailhead_scores['score'].sum()"
 				],
 				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_trailhead_scores = df_routes.groupby(['trailhead_id']).size().to_frame()\r\n",
+					"df_trailhead_scores.columns = ['score']\r\n",
+					"df_trailhead_scores.head(20)"
+				],
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_trailhead_scores['score'].sum()"
+				],
+				"execution_count": 27
 			},
 			{
 				"cell_type": "code",
