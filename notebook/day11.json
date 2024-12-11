@@ -1,0 +1,197 @@
+{
+	"name": "day11",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlbig",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 1,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "46f6a7c3-a1ab-49cc-9016-ec3935f40829"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlbig",
+				"name": "carlbig",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlbig",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 8,
+				"memory": 56,
+				"automaticScaleJobs": true
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd\r\n",
+					"from datetime import datetime"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def blink_stone(stone_num):\r\n",
+					"    num_length = len(str(stone_num))\r\n",
+					"\r\n",
+					"    if int(stone_num) == 0:\r\n",
+					"        return [1]\r\n",
+					"    elif num_length % 2 == 0:\r\n",
+					"        left_half = int(str(stone_num)[:int(num_length/2)])\r\n",
+					"        right_half = int(str(stone_num)[-int(num_length/2):])\r\n",
+					"        return [left_half, right_half]\r\n",
+					"    else:\r\n",
+					"        return [int(stone_num) * 2024]"
+				],
+				"execution_count": 111
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def blink(df):\r\n",
+					"    df['new_numbers'] = df['number'].apply(blink_stone)\r\n",
+					"    df = df.explode('new_numbers')\r\n",
+					"    df = df.drop('number', axis=1)\r\n",
+					"    df.rename(columns={'new_numbers': 'number'}, inplace=True)\r\n",
+					"    \r\n",
+					"    return df"
+				],
+				"execution_count": 112
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# input_str = \"0 1 10 99 999\"\r\n",
+					"#input_str = \"125 17\"\r\n",
+					"input_str = \"872027 227 18 9760 0 4 67716 9245696\"\r\n",
+					"\r\n",
+					"df_stones = pd.Series(input_str.split()).to_frame()\r\n",
+					"df_stones.columns = ['number']\r\n",
+					"df_stones.head()"
+				],
+				"execution_count": 131
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"checkpoint = datetime.now()\r\n",
+					"\r\n",
+					"for i in range (25):\r\n",
+					"    df_stones = blink(df_stones)\r\n",
+					"    print (f\"blink {i+1} resulted in :  {df_stones.shape[0]} stones after {datetime.now() - checkpoint} elapsed\")\r\n",
+					"\r\n",
+					"    checkpoint = datetime.now()"
+				],
+				"execution_count": 132
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_stones['number'].count()"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
