@@ -4,20 +4,20 @@
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "carlbig",
+			"referenceName": "carlsmall",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
-			"driverMemory": "56g",
-			"driverCores": 8,
-			"executorMemory": "56g",
-			"executorCores": 8,
-			"numExecutors": 1,
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
 			"conf": {
-				"spark.dynamicAllocation.enabled": "true",
-				"spark.dynamicAllocation.minExecutors": "1",
-				"spark.dynamicAllocation.maxExecutors": "4",
-				"spark.autotune.trackingId": "46f6a7c3-a1ab-49cc-9016-ec3935f40829"
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "abcc0e96-ea04-4e36-bfd1-7bde985af493"
 			}
 		},
 		"metadata": {
@@ -31,19 +31,19 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlbig",
-				"name": "carlbig",
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
 				"type": "Spark",
-				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlbig",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.4",
 				"nodeCount": 10,
-				"cores": 8,
-				"memory": 56,
-				"automaticScaleJobs": true
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -54,7 +54,7 @@
 					"import pandas as pd\r\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 1
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -82,7 +82,7 @@
 					"    else:\r\n",
 					"        return [int(stone_num) * 2024]"
 				],
-				"execution_count": 111
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -101,12 +101,17 @@
 					"def blink(df):\r\n",
 					"    df['new_numbers'] = df['number'].apply(blink_stone)\r\n",
 					"    df = df.explode('new_numbers')\r\n",
-					"    df = df.drop('number', axis=1)\r\n",
-					"    df.rename(columns={'new_numbers': 'number'}, inplace=True)\r\n",
-					"    \r\n",
-					"    return df"
+					"    # df = df.drop('number', axis=1)\r\n",
+					"    # df.rename(columns={'new_numbers': 'number'}, inplace=True)\r\n",
+					"\r\n",
+					"    df_agg = df.groupby('new_numbers')['stone_count'].sum().to_frame()\r\n",
+					"    df_agg.reset_index(inplace = True)\r\n",
+					"    df_agg.rename(columns={'new_numbers': 'number'}, inplace=True)\r\n",
+					"    df_agg.head()\r\n",
+					"\r\n",
+					"    return df_agg"
 				],
-				"execution_count": 112
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
@@ -123,14 +128,15 @@
 				},
 				"source": [
 					"# input_str = \"0 1 10 99 999\"\r\n",
-					"#input_str = \"125 17\"\r\n",
+					"# input_str = \"125 17\"\r\n",
 					"input_str = \"872027 227 18 9760 0 4 67716 9245696\"\r\n",
 					"\r\n",
 					"df_stones = pd.Series(input_str.split()).to_frame()\r\n",
 					"df_stones.columns = ['number']\r\n",
+					"df_stones['stone_count'] = 1\r\n",
 					"df_stones.head()"
 				],
-				"execution_count": 131
+				"execution_count": 31
 			},
 			{
 				"cell_type": "code",
@@ -148,13 +154,13 @@
 				"source": [
 					"checkpoint = datetime.now()\r\n",
 					"\r\n",
-					"for i in range (25):\r\n",
+					"for i in range (75):\r\n",
 					"    df_stones = blink(df_stones)\r\n",
-					"    print (f\"blink {i+1} resulted in :  {df_stones.shape[0]} stones after {datetime.now() - checkpoint} elapsed\")\r\n",
+					"    print (f\"blink {i+1} resulted in :  {df_stones.shape[0]} unique stone numbers after {datetime.now() - checkpoint} elapsed\")\r\n",
 					"\r\n",
 					"    checkpoint = datetime.now()"
 				],
-				"execution_count": 132
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -170,9 +176,9 @@
 					}
 				},
 				"source": [
-					"df_stones['number'].count()"
+					"df_stones['stone_count'].sum()"
 				],
-				"execution_count": null
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
