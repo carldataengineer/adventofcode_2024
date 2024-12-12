@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "bf50535d-afc1-4d34-8c22-a204b58da017"
+				"spark.autotune.trackingId": "6ae409bf-ce08-424b-aff1-743ae494f9cc"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 102
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -82,7 +82,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 103
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -106,7 +106,7 @@
 					"\r\n",
 					"df_coord.head(20)"
 				],
-				"execution_count": 104
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -132,7 +132,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 105
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -158,7 +158,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 106
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -186,11 +186,13 @@
 					"    df_additional_plot.columns = ('region', 'plant', 'x', 'y', 'idx')\r\n",
 					"    #df_additional_plot.head()\r\n",
 					"\r\n",
+					"    # only unique points and add future directions\r\n",
+					"    df_additional_plot = df_additional_plot.groupby('idx').max().reset_index()\r\n",
 					"    df_additional_plot['direction'] = [['u','d','l','r']] * df_additional_plot.shape[0]\r\n",
 					"\r\n",
 					"    return df_additional_plot    "
 				],
-				"execution_count": 119
+				"execution_count": 22
 			},
 			{
 				"cell_type": "code",
@@ -217,12 +219,14 @@
 					"df_region.reset_index(inplace=True)\r\n",
 					"df_region['region'] = df_region.index\r\n",
 					"df_region = df_region.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
+					"df_region['grow_iteration'] = 0\r\n",
 					"df_region['direction'] = [['u','d','l','r']] * df_region.shape[0]\r\n",
 					"# df_region.head()\r\n",
 					"\r\n",
 					"while (additional_plots > 0) & (i_grow < 10):\r\n",
 					"    # grow the region with adjacent plots\r\n",
 					"    df_additional_plot = grow_plot(df_region.copy(), df_unassociated.copy())\r\n",
+					"    df_additional_plot['grow_iteration'] = i_grow\r\n",
 					"    additional_plots = df_additional_plot.shape[0]\r\n",
 					"\r\n",
 					"    # add new plants to their regions\r\n",
@@ -232,13 +236,13 @@
 					"    df_unassociated = df_unassociated.merge(df_region, how='left', left_on='idx', right_on='idx', suffixes=('', '_region'), indicator = True)\r\n",
 					"    df_unassociated = df_unassociated[df_unassociated['_merge'] == 'left_only']\r\n",
 					"    df_unassociated = df_unassociated[['plant', 'x', 'y', 'idx']]\r\n",
-					"    df_unassociated.head(10)\r\n",
+					"    #df_unassociated.head(10)\r\n",
 					"\r\n",
 					"    # iteration management\r\n",
 					"    print(f\"grow {i_grow}: found {additional_plots} additional plots\")\r\n",
 					"    i_grow += 1"
 				],
-				"execution_count": 120
+				"execution_count": 23
 			},
 			{
 				"cell_type": "code",
@@ -256,7 +260,7 @@
 				"source": [
 					"df_region.sort_values(by = ['region', 'plant', 'x', 'y']).head(20)"
 				],
-				"execution_count": 124
+				"execution_count": 24
 			},
 			{
 				"cell_type": "code",
@@ -272,9 +276,13 @@
 					}
 				},
 				"source": [
-					"df_region.groupby('idx').max()"
+					"df_additional_plot = grow_plot(df_region.copy(), df_coord.copy())\r\n",
+					"\r\n",
+					"df_additional_plot = df_additional_plot.groupby('idx').max().reset_index()\r\n",
+					"\r\n",
+					"df_additional_plot.head()"
 				],
-				"execution_count": 131
+				"execution_count": 21
 			}
 		]
 	}
