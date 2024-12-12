@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1d2703e8-a62b-4a4f-9104-78f90020f1a0"
+				"spark.autotune.trackingId": "b8136e13-35ff-4734-89c2-5fea66c40176"
 			}
 		},
 		"metadata": {
@@ -255,22 +255,25 @@
 					"\r\n",
 					"df_region = pd.DataFrame(columns=['region','plant','x','y','idx','grow_iteration','direction'])\r\n",
 					"\r\n",
-					"#while unassociated_plots > 0:\r\n",
+					"while unassociated_plots > 0:\r\n",
 					"\r\n",
-					"df_new_region = df_unassociated.groupby('plant').min('idx')\r\n",
-					"df_new_region.reset_index(inplace=True)\r\n",
-					"df_new_region['region'] = df_new_region.index\r\n",
-					"df_new_region = df_new_region.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
-					"df_new_region['grow_iteration'] = 0\r\n",
-					"df_new_region['direction'] = [['u','d','l','r']] * df_new_region.shape[0]\r\n",
-					"# df_new_region.head()\r\n",
+					"    df_new_region = df_unassociated.groupby('plant').min('idx')\r\n",
+					"    df_new_region.reset_index(inplace=True)\r\n",
+					"    df_new_region['region'] = df_new_region.index\r\n",
+					"    df_new_region = df_new_region.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
+					"    df_new_region['grow_iteration'] = 0\r\n",
+					"    df_new_region['direction'] = [['u','d','l','r']] * df_new_region.shape[0]\r\n",
+					"    # df_new_region.head()\r\n",
 					"\r\n",
-					"# build region from initial plot\r\n",
-					"df_new_region, df_unassociated = build_region(df_new_region, df_unassociated)\r\n",
-					"# add region to list \r\n",
-					"df_region = pd.concat([df_region, df_new_region])"
+					"    # build region from initial plot\r\n",
+					"    df_new_region, df_unassociated = build_region(df_new_region, df_unassociated)\r\n",
+					"    # add region to list \r\n",
+					"    df_region = pd.concat([df_region, df_new_region])\r\n",
+					"\r\n",
+					"    # iteration management\r\n",
+					"    unassociated_plots = df_unassociated.shape[0]"
 				],
-				"execution_count": 46
+				"execution_count": 56
 			},
 			{
 				"cell_type": "code",
@@ -286,27 +289,9 @@
 					}
 				},
 				"source": [
-					"df_region.head()"
+					"df_region.sort_values(by = ['region', 'plant', 'x', 'y']).head(30)"
 				],
-				"execution_count": 47
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_new_region.sort_values(by = ['region', 'plant', 'x', 'y']).head(20)"
-				],
-				"execution_count": null
+				"execution_count": 62
 			},
 			{
 				"cell_type": "code",
@@ -324,7 +309,31 @@
 				"source": [
 					"df_region[['x', 'y', 'plant']].set_index(['y', 'x']).unstack()"
 				],
-				"execution_count": 54
+				"execution_count": 59
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_new_region = df_unassociated.groupby('plant').min('idx')\r\n",
+					"df_new_region.reset_index(inplace=True)\r\n",
+					"df_new_region['region'] = df_new_region.index\r\n",
+					"df_new_region = df_new_region.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
+					"df_new_region['grow_iteration'] = 0\r\n",
+					"df_new_region['direction'] = [['u','d','l','r']] * df_new_region.shape[0]\r\n",
+					"df_new_region.head()"
+				],
+				"execution_count": 55
 			}
 		]
 	}
