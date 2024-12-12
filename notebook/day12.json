@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "85873b26-9b1f-477a-b6c7-38b832d805a2"
+				"spark.autotune.trackingId": "ccf41da6-2dad-4f7f-950c-17d9db77099e"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 14
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -82,7 +82,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 2
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -106,7 +106,7 @@
 					"\r\n",
 					"df_coord.head(20)"
 				],
-				"execution_count": 3
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -132,7 +132,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 4
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
@@ -158,7 +158,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 5
+				"execution_count": 19
 			},
 			{
 				"cell_type": "code",
@@ -192,7 +192,7 @@
 					"\r\n",
 					"    return df_additional_plot    "
 				],
-				"execution_count": 6
+				"execution_count": 20
 			},
 			{
 				"cell_type": "code",
@@ -234,7 +234,7 @@
 					"\r\n",
 					"    return df_plot, df_unassociated"
 				],
-				"execution_count": 7
+				"execution_count": 21
 			},
 			{
 				"cell_type": "code",
@@ -275,7 +275,7 @@
 					"    # iteration management\r\n",
 					"    unassociated_plots = df_unassociated.shape[0]"
 				],
-				"execution_count": 8
+				"execution_count": 22
 			},
 			{
 				"cell_type": "code",
@@ -293,7 +293,7 @@
 				"source": [
 					"df_region[df_region['plant']=='C'].head(20)"
 				],
-				"execution_count": 9
+				"execution_count": 23
 			},
 			{
 				"cell_type": "code",
@@ -313,7 +313,7 @@
 					"#df_region_coord[df_region_coord['plant']=='C']\r\n",
 					"df_region_coord.head(10)"
 				],
-				"execution_count": 10
+				"execution_count": 24
 			},
 			{
 				"cell_type": "code",
@@ -333,7 +333,7 @@
 					"df_region_size.rename(columns={'plant': 'plot_count'}, inplace=True)\r\n",
 					"df_region_size.head(20)"
 				],
-				"execution_count": 11
+				"execution_count": 25
 			},
 			{
 				"cell_type": "code",
@@ -351,7 +351,7 @@
 				"source": [
 					"df_region[['x', 'y', 'plant']].set_index(['y', 'x']).unstack()"
 				],
-				"execution_count": 12
+				"execution_count": 26
 			},
 			{
 				"cell_type": "code",
@@ -369,7 +369,7 @@
 				"source": [
 					"df_unassociated.head()"
 				],
-				"execution_count": 13
+				"execution_count": 27
 			},
 			{
 				"cell_type": "code",
