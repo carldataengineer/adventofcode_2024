@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "ccf41da6-2dad-4f7f-950c-17d9db77099e"
+				"spark.autotune.trackingId": "d9d88f43-ed2e-49b4-a7aa-af7b7ee59a69"
 			}
 		},
 		"metadata": {
@@ -74,7 +74,7 @@
 					"for i in range(10):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day12/test_input_3.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day12/test_input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -370,6 +370,50 @@
 					"df_unassociated.head()"
 				],
 				"execution_count": 27
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_region_coord['direction'] = [['u','d','l','r']] * df_region_coord.shape[0]\r\n",
+					"\r\n",
+					"df_possible_perim = df_region_coord.explode('direction')\r\n",
+					"df_possible_perim['x_step'] = df_possible_perim.apply(x_step, axis=1)\r\n",
+					"df_possible_perim['y_step'] = df_possible_perim.apply(y_step, axis=1)\r\n",
+					"\r\n",
+					"df_region_perim = df_possible_perim.merge(df_region_coord, how='left', left_on=['region', 'x_step', 'y_step'], right_on=['region', 'x', 'y'], suffixes=('', '_adj'), indicator = True)\r\n",
+					"df_region_perim = df_region_perim[df_region_perim['_merge'] == 'left_only']\r\n",
+					"df_region_perim.head()"
+				],
+				"execution_count": 34
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_region_perim.head()"
+				],
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
