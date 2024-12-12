@@ -1,0 +1,291 @@
+{
+	"name": "day12",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "26a459f2-2e48-401b-a96f-e3daf0cad446"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 47
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"col_specs = []\r\n",
+					"\r\n",
+					"for i in range(4):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day12/test_input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"\r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"df_input.head(10)"
+				],
+				"execution_count": 48
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# pivot to list of coordinates\r\n",
+					"df_coord = df_input.stack().to_frame().rename_axis(index=('y','x'))\r\n",
+					"df_coord.columns = ['plant']\r\n",
+					"df_coord.reset_index(inplace=True)\r\n",
+					"df_coord['idx'] = df_coord.index\r\n",
+					"\r\n",
+					"df_coord.head(20)"
+				],
+				"execution_count": 49
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def x_step(r):\r\n",
+					"    if r['direction'] == 'u':\r\n",
+					"        return r['x']\r\n",
+					"    elif r['direction'] == 'd':\r\n",
+					"        return r['x']\r\n",
+					"    elif r['direction'] == 'l':\r\n",
+					"        return r['x'] -1\r\n",
+					"    elif r['direction'] == 'r':\r\n",
+					"        return r['x'] + 1"
+				],
+				"execution_count": 50
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def y_step(r):\r\n",
+					"    if r['direction'] == 'u':\r\n",
+					"        return r['y'] - 1\r\n",
+					"    elif r['direction'] == 'd':\r\n",
+					"        return r['y'] + 1\r\n",
+					"    elif r['direction'] == 'l':\r\n",
+					"        return r['y']\r\n",
+					"    elif r['direction'] == 'r':\r\n",
+					"        return r['y']"
+				],
+				"execution_count": 51
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"unassociated_plots = df_coord.shape[0]\r\n",
+					"additional_plots = 1\r\n",
+					"\r\n",
+					"while unassociated_plots > 0:\r\n",
+					"    while additional_plots > 0:\r\n",
+					"        additional_plots = grow_plot(df_coord.copy())"
+				],
+				"execution_count": 52
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def grow_plot(df_unassociated):"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_starting_plot = df_unassociated_plots.groupby('plant').min('idx')\r\n",
+					"df_starting_plot.reset_index(inplace=True)\r\n",
+					"df_starting_plot['region'] = df_starting_plot.index\r\n",
+					"df_starting_plot = df_starting_plot.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
+					"df_starting_plot.head()"
+				],
+				"execution_count": 60
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_starting_plot['direction'] = [['u','d','l','r']] * df_starting_plot.shape[0]\r\n",
+					"df_possible_plot = df_starting_plot.explode('direction')\r\n",
+					"df_possible_plot['x_step'] = df_possible_plot.apply(x_step, axis=1)\r\n",
+					"df_possible_plot['y_step'] = df_possible_plot.apply(y_step, axis=1)\r\n",
+					"df_possible_plot.head()"
+				],
+				"execution_count": 55
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_additional_plot = df_possible_plot.merge(df_coord, how='inner', left_on=['plant','x_step','y_step'], right_on=['plant','x','y'], suffixes=('', '_add'))\r\n",
+					"df_additional_plot = df_additional_plot[df_additional_plot['idx_add'] > df_additional_plot['idx']]\r\n",
+					"df_additional_plot = df_additional_plot[['region', 'plant', 'y_add', 'x_add', 'idx_add']]\r\n",
+					"df_additional_plot.columns = ('region', 'plant', 'x', 'y', 'idx')\r\n",
+					"df_additional_plot.head()"
+				],
+				"execution_count": 61
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_plots = pd.concat([df_starting_plot, df_additional_plot])\r\n",
+					"df_plots.head(10)"
+				],
+				"execution_count": 64
+			}
+		]
+	}
+}
