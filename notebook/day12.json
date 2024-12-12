@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "746f3bcb-d837-45b0-ab75-1e67854a971c"
+				"spark.autotune.trackingId": "dd181c87-35d0-4546-b3fe-e440be977ca0"
 			}
 		},
 		"metadata": {
@@ -54,7 +54,7 @@
 					"import pandas as pd\r\n",
 					"import numpy as np"
 				],
-				"execution_count": 134
+				"execution_count": 282
 			},
 			{
 				"cell_type": "code",
@@ -83,7 +83,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 135
+				"execution_count": 283
 			},
 			{
 				"cell_type": "code",
@@ -107,7 +107,7 @@
 					"\r\n",
 					"df_coord.head(20)"
 				],
-				"execution_count": 136
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -133,7 +133,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 137
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -159,7 +159,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 138
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +193,7 @@
 					"\r\n",
 					"    return df_additional_plot    "
 				],
-				"execution_count": 139
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -235,7 +235,7 @@
 					"\r\n",
 					"    return df_plot, df_unassociated"
 				],
-				"execution_count": 140
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -276,7 +276,7 @@
 					"    # iteration management\r\n",
 					"    unassociated_plots = df_unassociated.shape[0]"
 				],
-				"execution_count": 141
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -294,7 +294,7 @@
 				"source": [
 					"df_region[df_region['plant']=='C'].head(20)"
 				],
-				"execution_count": 142
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -314,7 +314,7 @@
 					"#df_region_coord[df_region_coord['plant']=='C']\r\n",
 					"df_region_coord.head(10)"
 				],
-				"execution_count": 143
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -334,7 +334,7 @@
 					"df_region_size.rename(columns={'plant': 'plot_count'}, inplace=True)\r\n",
 					"df_region_size.head(20)"
 				],
-				"execution_count": 144
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -352,7 +352,7 @@
 				"source": [
 					"df_region[['x', 'y', 'plant']].set_index(['y', 'x']).unstack()"
 				],
-				"execution_count": 145
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -370,7 +370,7 @@
 				"source": [
 					"df_unassociated.head()"
 				],
-				"execution_count": 146
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -397,7 +397,7 @@
 					"df_region_perim = df_region_perim[['region', 'plant', 'x', 'y', 'direction']]\r\n",
 					"df_region_perim.head(20)"
 				],
-				"execution_count": 147
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -417,7 +417,7 @@
 					"df_region_perim_size.rename(columns={'direction': 'perim_count'}, inplace=True)\r\n",
 					"df_region_perim_size.head(20)"
 				],
-				"execution_count": 148
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -442,7 +442,7 @@
 					"df_answer['price'] = df_answer['plot_count'] * df_answer['perim_count']\r\n",
 					"df_answer.head()"
 				],
-				"execution_count": 149
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -460,7 +460,7 @@
 				"source": [
 					"df_answer['price'].sum()"
 				],
-				"execution_count": 150
+				"execution_count": null
 			},
 			{
 				"cell_type": "markdown",
@@ -496,7 +496,7 @@
 					"df_region_perim_tl = df_region_perim_tl[df_region_perim_tl['direction']=='u'].groupby(['region', 'plant', 'direction', 'x'])['y'].min().to_frame().reset_index().set_index(['region'])\r\n",
 					"df_region_perim_tl.head(10)"
 				],
-				"execution_count": 172
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -516,7 +516,7 @@
 					"df_region_coord_2.drop('direction', axis=1, inplace=True)\r\n",
 					"df_region_coord_2.head(20)"
 				],
-				"execution_count": 202
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -532,7 +532,106 @@
 					}
 				},
 				"source": [
-					"def walk_region_perim(region, df_coord):"
+					"def walk_region_perim(region, s_x, s_y, s_s, s_d, df_coord):\r\n",
+					"\r\n",
+					"    x = s_x\r\n",
+					"    y = s_y\r\n",
+					"    s = s_s\r\n",
+					"    d = s_d\r\n",
+					"\r\n",
+					"    keep_walking = True\r\n",
+					"    edge_count = 0\r\n",
+					"\r\n",
+					"    while ((keep_walking == True) & (edge_count < 10)):\r\n",
+					"\r\n",
+					"        if ((d == 'r') & (s == 'u')):\r\n",
+					"            if ((region,x+1,y-1) in df_coord.index):\r\n",
+					"                x += 1\r\n",
+					"                y -= 1\r\n",
+					"                s = 'l'\r\n",
+					"                d = 'u'\r\n",
+					"                edge_count += 1\r\n",
+					"            elif ((region,x+1,y) in df_coord.index):\r\n",
+					"                x += 1\r\n",
+					"                # y no change\r\n",
+					"                s = 'u'\r\n",
+					"                d = 'r'\r\n",
+					"                # edge_count no change\r\n",
+					"            else:\r\n",
+					"                #x no change\r\n",
+					"                #y no change\r\n",
+					"                s = 'r'\r\n",
+					"                d = 'd'\r\n",
+					"                edge_count += 1\r\n",
+					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"        elif ((d == 'd') & (s == 'r')):\r\n",
+					"            if ((region,x+1,y+1) in df_coord.index):\r\n",
+					"                x += 1\r\n",
+					"                y += 1\r\n",
+					"                s = 'u'\r\n",
+					"                d = 'r'\r\n",
+					"                edge_count += 1\r\n",
+					"            elif ((region,x,y+1) in df_coord.index):\r\n",
+					"                #x no change\r\n",
+					"                y += 1\r\n",
+					"                s = 'r'\r\n",
+					"                d = 'd'\r\n",
+					"                # edge_count no change\r\n",
+					"            else:\r\n",
+					"                #x no change\r\n",
+					"                #y no change\r\n",
+					"                s = 'd'\r\n",
+					"                d = 'l'\r\n",
+					"                edge_count += 1\r\n",
+					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"        elif ((d == 'l') & (s == 'd')):\r\n",
+					"            if ((region,x-1,y+1) in df_coord.index):\r\n",
+					"                x -= 1\r\n",
+					"                y += 1\r\n",
+					"                s = 'r'\r\n",
+					"                d = 'd'\r\n",
+					"                edge_count += 1\r\n",
+					"            elif ((region,x-1,y) in df_coord.index):\r\n",
+					"                x -= 1\r\n",
+					"                #y no change\r\n",
+					"                s = 'd'\r\n",
+					"                d = 'l'\r\n",
+					"                # edge_count no change\r\n",
+					"            else:\r\n",
+					"                #x no change\r\n",
+					"                #y no change\r\n",
+					"                s = 'l'\r\n",
+					"                d = 'u'\r\n",
+					"                edge_count += 1\r\n",
+					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"        elif ((d == 'u') & (s == 'l')):\r\n",
+					"            if ((region,x-1,y-1) in df_coord.index):\r\n",
+					"                x -= 1\r\n",
+					"                y -= 1\r\n",
+					"                s = 'd'\r\n",
+					"                d = 'l'\r\n",
+					"                edge_count += 1\r\n",
+					"            elif ((region,x,y-1) in df_coord.index):\r\n",
+					"                #x no change\r\n",
+					"                y -= 1\r\n",
+					"                s = 'l'\r\n",
+					"                d = 'u'\r\n",
+					"                # edge_count no change\r\n",
+					"            else:\r\n",
+					"                #x no change\r\n",
+					"                #y no change\r\n",
+					"                s = 'u'\r\n",
+					"                d = 'r'\r\n",
+					"                edge_count += 1\r\n",
+					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"        else:\r\n",
+					"            print(f\"walking region {region} unknown heading {d} with perim on {s}\")\r\n",
+					"            keep_walking = False\r\n",
+					"\r\n",
+					"        if ((x==s_x) & (y==s_y) & (s==s_s) & (d==s_d)):\r\n",
+					"            keep_walking = False\r\n",
+					"\r\n",
+					"    return edge_count"
 				],
 				"execution_count": null
 			},
@@ -550,7 +649,19 @@
 					}
 				},
 				"source": [
-					"df_region_perim_tl['perim_edges'] = df_region_perim_tl.apply(walk_region_perim, df_coord, axis=1)"
+					"df_region_perim_tl['edge_count'] = 0\r\n",
+					"\r\n",
+					"for idx, region in df_region_perim_tl.iterrows():\r\n",
+					"    region_number = idx\r\n",
+					"    plant = region['plant']\r\n",
+					"    start_x = region['x']\r\n",
+					"    start_y = region['y']\r\n",
+					"    start_s = region['direction']\r\n",
+					"\r\n",
+					"    print(f\"walking region {region_number} ({plant}) starting at (x={start_x},y={start_y})\")\r\n",
+					"\r\n",
+					"    edge_count = walk_region_perim(region_number, start_x, start_y, start_s, 'r', df_region_coord_2.copy())\r\n",
+					"    df_region_perim_tl.at[region, 'edge_count'] = edge_count"
 				],
 				"execution_count": null
 			},
@@ -581,7 +692,7 @@
 					"\r\n",
 					"print(f\"walking region {region} starting at (x={x},y={y}) heading {d} with perim on {s}\")"
 				],
-				"execution_count": 233
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -597,121 +708,9 @@
 					}
 				},
 				"source": [
-					"walk_region_perim(3)"
+					"walk_region_perim(4, 0, 0, 'u', 'r', df_region_coord_2.copy())"
 				],
-				"execution_count": 237
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"def walk_region_perim(region):\r\n",
-					"\r\n",
-					"    keep_walking = True\r\n",
-					"    edge_count = 0\r\n",
-					"\r\n",
-					"    while ((keep_walking == True) & (edge_count < 10)):\r\n",
-					"\r\n",
-					"        if ((d == 'r') & (s == 'u')):\r\n",
-					"            if ((region,x+1,y-1) in df_region_coord_2.index):\r\n",
-					"                x += 1\r\n",
-					"                y -= 1\r\n",
-					"                s = 'l'\r\n",
-					"                d = 'u'\r\n",
-					"                edge_count += 1\r\n",
-					"            elif ((region,x+1,y) in df_region_coord_2.index):\r\n",
-					"                x += 1\r\n",
-					"                # y no change\r\n",
-					"                s = 'u'\r\n",
-					"                d = 'r'\r\n",
-					"                # edge_count no change\r\n",
-					"            else:\r\n",
-					"                #x no change\r\n",
-					"                #y no change\r\n",
-					"                s = 'r'\r\n",
-					"                d = 'd'\r\n",
-					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
-					"        elif ((d == 'd') & (s == 'r')):\r\n",
-					"            if ((region,x+1,y+1) in df_region_coord_2.index):\r\n",
-					"                x += 1\r\n",
-					"                y += 1\r\n",
-					"                s = 'u'\r\n",
-					"                d = 'r'\r\n",
-					"                edge_count += 1\r\n",
-					"            elif ((region,x,y+1) in df_region_coord_2.index):\r\n",
-					"                #x no change\r\n",
-					"                y += 1\r\n",
-					"                s = 'r'\r\n",
-					"                d = 'd'\r\n",
-					"                # edge_count no change\r\n",
-					"            else:\r\n",
-					"                #x no change\r\n",
-					"                #y no change\r\n",
-					"                s = 'd'\r\n",
-					"                d = 'l'\r\n",
-					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
-					"        elif ((d == 'l') & (s == 'd')):\r\n",
-					"            if ((region,x-1,y+1) in df_region_coord_2.index):\r\n",
-					"                x -= 1\r\n",
-					"                y += 1\r\n",
-					"                s = 'r'\r\n",
-					"                d = 'd'\r\n",
-					"                edge_count += 1\r\n",
-					"            elif ((region,x-1,y) in df_region_coord_2.index):\r\n",
-					"                x -= 1\r\n",
-					"                #y no change\r\n",
-					"                s = 'd'\r\n",
-					"                d = 'l'\r\n",
-					"                # edge_count no change\r\n",
-					"            else:\r\n",
-					"                #x no change\r\n",
-					"                #y no change\r\n",
-					"                s = 'l'\r\n",
-					"                d = 'u'\r\n",
-					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
-					"        elif ((d == 'u') & (s == 'l')):\r\n",
-					"            if ((region,x-1,y-1) in df_region_coord_2.index):\r\n",
-					"                x -= 1\r\n",
-					"                y -= 1\r\n",
-					"                s = 'd'\r\n",
-					"                d = 'l'\r\n",
-					"                edge_count += 1\r\n",
-					"            elif ((region,x,y-1) in df_region_coord_2.index):\r\n",
-					"                #x no change\r\n",
-					"                y -= 1\r\n",
-					"                s = 'l'\r\n",
-					"                d = 'u'\r\n",
-					"                # edge_count no change\r\n",
-					"            else:\r\n",
-					"                #x no change\r\n",
-					"                #y no change\r\n",
-					"                s = 'u'\r\n",
-					"                d = 'r'\r\n",
-					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
-					"        else:\r\n",
-					"            print(f\"walking region {region} unknown heading {d} with perim on {s}\")\r\n",
-					"            keep_walking = False\r\n",
-					"\r\n",
-					"        if ((x==start_x) & (y==start_y) & (s==start_s) & (d=='r')):\r\n",
-					"            keep_walking = False\r\n",
-					"\r\n",
-					"    return edge_count"
-				],
-				"execution_count": 236
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
