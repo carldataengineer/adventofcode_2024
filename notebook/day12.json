@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "26a459f2-2e48-401b-a96f-e3daf0cad446"
+				"spark.autotune.trackingId": "bf50535d-afc1-4d34-8c22-a204b58da017"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 47
+				"execution_count": 102
 			},
 			{
 				"cell_type": "code",
@@ -82,7 +82,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 48
+				"execution_count": 103
 			},
 			{
 				"cell_type": "code",
@@ -106,7 +106,7 @@
 					"\r\n",
 					"df_coord.head(20)"
 				],
-				"execution_count": 49
+				"execution_count": 104
 			},
 			{
 				"cell_type": "code",
@@ -132,7 +132,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 50
+				"execution_count": 105
 			},
 			{
 				"cell_type": "code",
@@ -158,7 +158,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 51
+				"execution_count": 106
 			},
 			{
 				"cell_type": "code",
@@ -174,14 +174,23 @@
 					}
 				},
 				"source": [
-					"unassociated_plots = df_coord.shape[0]\r\n",
-					"additional_plots = 1\r\n",
+					"def grow_plot(df_plot, df_unassociated_plot):\r\n",
+					"    df_possible_plot = df_plot.explode('direction')\r\n",
+					"    df_possible_plot['x_step'] = df_possible_plot.apply(x_step, axis=1)\r\n",
+					"    df_possible_plot['y_step'] = df_possible_plot.apply(y_step, axis=1)\r\n",
+					"    #df_possible_plot.head()\r\n",
 					"\r\n",
-					"while unassociated_plots > 0:\r\n",
-					"    while additional_plots > 0:\r\n",
-					"        additional_plots = grow_plot(df_coord.copy())"
+					"    df_additional_plot = df_possible_plot.merge(df_unassociated_plot, how='inner', left_on=['plant','x_step','y_step'], right_on=['plant','x','y'], suffixes=('', '_add'))\r\n",
+					"    df_additional_plot = df_additional_plot[df_additional_plot['idx_add'] > df_additional_plot['idx']]\r\n",
+					"    df_additional_plot = df_additional_plot[['region', 'plant', 'x_add', 'y_add', 'idx_add']]\r\n",
+					"    df_additional_plot.columns = ('region', 'plant', 'x', 'y', 'idx')\r\n",
+					"    #df_additional_plot.head()\r\n",
+					"\r\n",
+					"    df_additional_plot['direction'] = [['u','d','l','r']] * df_additional_plot.shape[0]\r\n",
+					"\r\n",
+					"    return df_additional_plot    "
 				],
-				"execution_count": 52
+				"execution_count": 119
 			},
 			{
 				"cell_type": "code",
@@ -197,9 +206,39 @@
 					}
 				},
 				"source": [
-					"def grow_plot(df_unassociated):"
+					"df_unassociated = df_coord.copy()\r\n",
+					"unassociated_plots = df_unassociated.shape[0]\r\n",
+					"additional_plots = 1\r\n",
+					"i_grow = 1\r\n",
+					"\r\n",
+					"#while unassociated_plots > 0:\r\n",
+					"\r\n",
+					"df_region = df_unassociated.groupby('plant').min('idx')\r\n",
+					"df_region.reset_index(inplace=True)\r\n",
+					"df_region['region'] = df_region.index\r\n",
+					"df_region = df_region.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
+					"df_region['direction'] = [['u','d','l','r']] * df_region.shape[0]\r\n",
+					"# df_region.head()\r\n",
+					"\r\n",
+					"while (additional_plots > 0) & (i_grow < 10):\r\n",
+					"    # grow the region with adjacent plots\r\n",
+					"    df_additional_plot = grow_plot(df_region.copy(), df_unassociated.copy())\r\n",
+					"    additional_plots = df_additional_plot.shape[0]\r\n",
+					"\r\n",
+					"    # add new plants to their regions\r\n",
+					"    df_region = pd.concat([df_region, df_additional_plot])\r\n",
+					"\r\n",
+					"    # remove newly associated plants from the available list\r\n",
+					"    df_unassociated = df_unassociated.merge(df_region, how='left', left_on='idx', right_on='idx', suffixes=('', '_region'), indicator = True)\r\n",
+					"    df_unassociated = df_unassociated[df_unassociated['_merge'] == 'left_only']\r\n",
+					"    df_unassociated = df_unassociated[['plant', 'x', 'y', 'idx']]\r\n",
+					"    df_unassociated.head(10)\r\n",
+					"\r\n",
+					"    # iteration management\r\n",
+					"    print(f\"grow {i_grow}: found {additional_plots} additional plots\")\r\n",
+					"    i_grow += 1"
 				],
-				"execution_count": null
+				"execution_count": 120
 			},
 			{
 				"cell_type": "code",
@@ -215,13 +254,9 @@
 					}
 				},
 				"source": [
-					"df_starting_plot = df_unassociated_plots.groupby('plant').min('idx')\r\n",
-					"df_starting_plot.reset_index(inplace=True)\r\n",
-					"df_starting_plot['region'] = df_starting_plot.index\r\n",
-					"df_starting_plot = df_starting_plot.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
-					"df_starting_plot.head()"
+					"df_region.sort_values(by = ['region', 'plant', 'x', 'y']).head(20)"
 				],
-				"execution_count": 60
+				"execution_count": 124
 			},
 			{
 				"cell_type": "code",
@@ -237,54 +272,9 @@
 					}
 				},
 				"source": [
-					"df_starting_plot['direction'] = [['u','d','l','r']] * df_starting_plot.shape[0]\r\n",
-					"df_possible_plot = df_starting_plot.explode('direction')\r\n",
-					"df_possible_plot['x_step'] = df_possible_plot.apply(x_step, axis=1)\r\n",
-					"df_possible_plot['y_step'] = df_possible_plot.apply(y_step, axis=1)\r\n",
-					"df_possible_plot.head()"
+					"df_region.groupby('idx').max()"
 				],
-				"execution_count": 55
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_additional_plot = df_possible_plot.merge(df_coord, how='inner', left_on=['plant','x_step','y_step'], right_on=['plant','x','y'], suffixes=('', '_add'))\r\n",
-					"df_additional_plot = df_additional_plot[df_additional_plot['idx_add'] > df_additional_plot['idx']]\r\n",
-					"df_additional_plot = df_additional_plot[['region', 'plant', 'y_add', 'x_add', 'idx_add']]\r\n",
-					"df_additional_plot.columns = ('region', 'plant', 'x', 'y', 'idx')\r\n",
-					"df_additional_plot.head()"
-				],
-				"execution_count": 61
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_plots = pd.concat([df_starting_plot, df_additional_plot])\r\n",
-					"df_plots.head(10)"
-				],
-				"execution_count": 64
+				"execution_count": 131
 			}
 		]
 	}
