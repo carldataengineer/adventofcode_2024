@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "157d4746-2e3f-4e39-bb1b-69492abdcd7c"
+				"spark.autotune.trackingId": "f68ce101-7765-4535-b037-4117733cad4d"
 			}
 		},
 		"metadata": {
@@ -54,7 +54,7 @@
 					"import pandas as pd\r\n",
 					"import numpy as np"
 				],
-				"execution_count": 225
+				"execution_count": 275
 			},
 			{
 				"cell_type": "code",
@@ -75,7 +75,7 @@
 					"for i in range(140):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day12/test_input_3.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day12/input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -83,7 +83,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 226
+				"execution_count": 276
 			},
 			{
 				"cell_type": "code",
@@ -107,7 +107,7 @@
 					"\r\n",
 					"df_coord.head(20)"
 				],
-				"execution_count": 227
+				"execution_count": 277
 			},
 			{
 				"cell_type": "code",
@@ -133,7 +133,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 228
+				"execution_count": 278
 			},
 			{
 				"cell_type": "code",
@@ -159,7 +159,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 229
+				"execution_count": 279
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +193,7 @@
 					"\r\n",
 					"    return df_additional_plot    "
 				],
-				"execution_count": 230
+				"execution_count": 280
 			},
 			{
 				"cell_type": "code",
@@ -235,7 +235,7 @@
 					"\r\n",
 					"    return df_plot, df_unassociated"
 				],
-				"execution_count": 231
+				"execution_count": 281
 			},
 			{
 				"cell_type": "code",
@@ -276,7 +276,7 @@
 					"    # iteration management\r\n",
 					"    unassociated_plots = df_unassociated.shape[0]"
 				],
-				"execution_count": 232
+				"execution_count": 282
 			},
 			{
 				"cell_type": "code",
@@ -294,7 +294,7 @@
 				"source": [
 					"df_region[df_region['plant']=='C'].head(20)"
 				],
-				"execution_count": 233
+				"execution_count": 283
 			},
 			{
 				"cell_type": "code",
@@ -314,7 +314,7 @@
 					"#df_region_coord[df_region_coord['plant']=='C']\r\n",
 					"df_region_coord.head(10)"
 				],
-				"execution_count": 234
+				"execution_count": 284
 			},
 			{
 				"cell_type": "code",
@@ -334,7 +334,7 @@
 					"df_region_size.rename(columns={'plant': 'plot_count'}, inplace=True)\r\n",
 					"df_region_size.head(20)"
 				],
-				"execution_count": 235
+				"execution_count": 285
 			},
 			{
 				"cell_type": "code",
@@ -352,7 +352,7 @@
 				"source": [
 					"df_region[['x', 'y', 'plant']].set_index(['y', 'x']).unstack()"
 				],
-				"execution_count": 236
+				"execution_count": 286
 			},
 			{
 				"cell_type": "code",
@@ -370,7 +370,7 @@
 				"source": [
 					"df_unassociated.head()"
 				],
-				"execution_count": 237
+				"execution_count": 287
 			},
 			{
 				"cell_type": "code",
@@ -397,7 +397,7 @@
 					"df_region_perim = df_region_perim[['region', 'plant', 'x', 'y', 'direction']]\r\n",
 					"df_region_perim.head(20)"
 				],
-				"execution_count": 238
+				"execution_count": 288
 			},
 			{
 				"cell_type": "code",
@@ -417,7 +417,7 @@
 					"df_region_perim_size.rename(columns={'direction': 'perim_count'}, inplace=True)\r\n",
 					"df_region_perim_size.head(20)"
 				],
-				"execution_count": 239
+				"execution_count": 289
 			},
 			{
 				"cell_type": "code",
@@ -442,7 +442,7 @@
 					"df_answer['price'] = df_answer['plot_count'] * df_answer['perim_count']\r\n",
 					"df_answer.head()"
 				],
-				"execution_count": 240
+				"execution_count": 290
 			},
 			{
 				"cell_type": "code",
@@ -460,7 +460,7 @@
 				"source": [
 					"df_answer['price'].sum()"
 				],
-				"execution_count": 241
+				"execution_count": 291
 			},
 			{
 				"cell_type": "markdown",
@@ -493,7 +493,7 @@
 					"df_region_coord_2.drop('direction', axis=1, inplace=True)\r\n",
 					"df_region_coord_2.head(20)"
 				],
-				"execution_count": 242
+				"execution_count": 292
 			},
 			{
 				"cell_type": "code",
@@ -612,7 +612,7 @@
 					"\r\n",
 					"    return edge_count, visited_plot"
 				],
-				"execution_count": 243
+				"execution_count": 293
 			},
 			{
 				"cell_type": "code",
@@ -630,7 +630,7 @@
 				"source": [
 					"ec, vp = walk_region_perim(3, 3, 1, 'u', 'r', df_region_coord_2.copy())"
 				],
-				"execution_count": 244
+				"execution_count": 294
 			},
 			{
 				"cell_type": "code",
@@ -657,7 +657,25 @@
 					"df_region_perim_tl = df_region_perim[df_region_perim['direction']=='u'].reset_index().set_index(['region'])\r\n",
 					"df_region_perim_tl.head(20)"
 				],
-				"execution_count": 245
+				"execution_count": 295
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_region_perim_tl[df_region_perim_tl['plant'] == 'Y']"
+				],
+				"execution_count": 302
 			},
 			{
 				"cell_type": "code",
@@ -683,8 +701,6 @@
 					"    start_y = region['y']\r\n",
 					"    start_s = region['direction']\r\n",
 					"\r\n",
-					"    print(f\"walking region {region_number} ({plant}) starting at (x={start_x},y={start_y})\")\r\n",
-					"\r\n",
 					"    if [start_x, start_y] in plots_visited:\r\n",
 					"        edge_count = edge_count + [0]\r\n",
 					"    else:\r\n",
@@ -692,9 +708,12 @@
 					"        edge_count = edge_count + [new_edge_count]\r\n",
 					"        plots_visited = plots_visited + new_visited_plot\r\n",
 					"\r\n",
+					"        if (plant == 'Y'):\r\n",
+					"            print(f\"walking region {region_number} ({plant}) starting at (x={start_x},y={start_y}) found {new_edge_count} new edges\")\r\n",
+					"\r\n",
 					"df_region_perim_tl['edge_count'] = edge_count"
 				],
-				"execution_count": 246
+				"execution_count": 307
 			},
 			{
 				"cell_type": "code",
@@ -711,11 +730,12 @@
 				},
 				"source": [
 					"df_region_perim_tl_idx = df_region_perim_tl.reset_index().set_index(['region','plant'])\r\n",
+					"\r\n",
 					"df_answer_2 = df_region_size.merge(df_region_perim_tl_idx, how='left', left_index=True, right_index=True, suffixes=('', '_prm'))\r\n",
 					"df_answer_2['price'] = df_answer_2['plot_count'] * df_answer_2['edge_count']\r\n",
 					"df_answer_2[df_answer_2['price']!=0].head(10)"
 				],
-				"execution_count": 247
+				"execution_count": 314
 			},
 			{
 				"cell_type": "code",
@@ -731,45 +751,11 @@
 					}
 				},
 				"source": [
-					"df_answer_2[df_answer_2['price']!=0].head(10)"
+					"df_answer_2['price'].sum()\r\n",
+					"\r\n",
+					"# try 1 = 1118404"
 				],
-				"execution_count": 249
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_answer_2['price'].sum()"
-				],
-				"execution_count": 248
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					""
-				],
-				"execution_count": null
+				"execution_count": 316
 			}
 		]
 	}
