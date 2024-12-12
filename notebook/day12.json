@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6ae409bf-ce08-424b-aff1-743ae494f9cc"
+				"spark.autotune.trackingId": "1d2703e8-a62b-4a4f-9104-78f90020f1a0"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 1
+				"execution_count": 36
 			},
 			{
 				"cell_type": "code",
@@ -74,7 +74,7 @@
 					"for i in range(4):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day12/test_input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day12/test_input_2.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -82,7 +82,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 2
+				"execution_count": 37
 			},
 			{
 				"cell_type": "code",
@@ -106,7 +106,7 @@
 					"\r\n",
 					"df_coord.head(20)"
 				],
-				"execution_count": 3
+				"execution_count": 38
 			},
 			{
 				"cell_type": "code",
@@ -132,7 +132,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 4
+				"execution_count": 39
 			},
 			{
 				"cell_type": "code",
@@ -158,7 +158,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 5
+				"execution_count": 40
 			},
 			{
 				"cell_type": "code",
@@ -174,13 +174,13 @@
 					}
 				},
 				"source": [
-					"def grow_plot(df_plot, df_unassociated_plot):\r\n",
+					"def grow_plot(df_plot, df_unassociated):\r\n",
 					"    df_possible_plot = df_plot.explode('direction')\r\n",
 					"    df_possible_plot['x_step'] = df_possible_plot.apply(x_step, axis=1)\r\n",
 					"    df_possible_plot['y_step'] = df_possible_plot.apply(y_step, axis=1)\r\n",
 					"    #df_possible_plot.head()\r\n",
 					"\r\n",
-					"    df_additional_plot = df_possible_plot.merge(df_unassociated_plot, how='inner', left_on=['plant','x_step','y_step'], right_on=['plant','x','y'], suffixes=('', '_add'))\r\n",
+					"    df_additional_plot = df_possible_plot.merge(df_unassociated, how='inner', left_on=['plant','x_step','y_step'], right_on=['plant','x','y'], suffixes=('', '_add'))\r\n",
 					"    df_additional_plot = df_additional_plot[df_additional_plot['idx_add'] > df_additional_plot['idx']]\r\n",
 					"    df_additional_plot = df_additional_plot[['region', 'plant', 'x_add', 'y_add', 'idx_add']]\r\n",
 					"    df_additional_plot.columns = ('region', 'plant', 'x', 'y', 'idx')\r\n",
@@ -192,7 +192,49 @@
 					"\r\n",
 					"    return df_additional_plot    "
 				],
-				"execution_count": 22
+				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def build_region(df_plot, df_unassociated):\r\n",
+					"\r\n",
+					"    additional_plots = 1\r\n",
+					"    i_grow = 1\r\n",
+					"\r\n",
+					"    while (additional_plots > 0) & (i_grow < 100):\r\n",
+					"        # grow the region with adjacent plots\r\n",
+					"        df_additional_plot = grow_plot(df_plot, df_unassociated)\r\n",
+					"        df_additional_plot['grow_iteration'] = i_grow\r\n",
+					"        additional_plots = df_additional_plot.shape[0]\r\n",
+					"\r\n",
+					"        # add new plants to their regions\r\n",
+					"        df_plot = pd.concat([df_plot, df_additional_plot])\r\n",
+					"\r\n",
+					"        # remove newly associated plants from the available list\r\n",
+					"        df_unassociated = df_unassociated.merge(df_plot, how='left', left_on='idx', right_on='idx', suffixes=('', '_region'), indicator = True)\r\n",
+					"        df_unassociated = df_unassociated[df_unassociated['_merge'] == 'left_only']\r\n",
+					"        df_unassociated = df_unassociated[['plant', 'x', 'y', 'idx']]\r\n",
+					"        #df_unassociated.head(10)\r\n",
+					"\r\n",
+					"        # iteration management\r\n",
+					"        # print(f\"grow {i_grow}: found {additional_plots} additional plots\")\r\n",
+					"        i_grow += 1\r\n",
+					"\r\n",
+					"    return df_plot, df_unassociated"
+				],
+				"execution_count": 42
 			},
 			{
 				"cell_type": "code",
@@ -210,39 +252,25 @@
 				"source": [
 					"df_unassociated = df_coord.copy()\r\n",
 					"unassociated_plots = df_unassociated.shape[0]\r\n",
-					"additional_plots = 1\r\n",
-					"i_grow = 1\r\n",
+					"\r\n",
+					"df_region = pd.DataFrame(columns=['region','plant','x','y','idx','grow_iteration','direction'])\r\n",
 					"\r\n",
 					"#while unassociated_plots > 0:\r\n",
 					"\r\n",
-					"df_region = df_unassociated.groupby('plant').min('idx')\r\n",
-					"df_region.reset_index(inplace=True)\r\n",
-					"df_region['region'] = df_region.index\r\n",
-					"df_region = df_region.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
-					"df_region['grow_iteration'] = 0\r\n",
-					"df_region['direction'] = [['u','d','l','r']] * df_region.shape[0]\r\n",
-					"# df_region.head()\r\n",
+					"df_new_region = df_unassociated.groupby('plant').min('idx')\r\n",
+					"df_new_region.reset_index(inplace=True)\r\n",
+					"df_new_region['region'] = df_new_region.index\r\n",
+					"df_new_region = df_new_region.reindex(columns=['region', 'plant', 'x', 'y', 'idx'])\r\n",
+					"df_new_region['grow_iteration'] = 0\r\n",
+					"df_new_region['direction'] = [['u','d','l','r']] * df_new_region.shape[0]\r\n",
+					"# df_new_region.head()\r\n",
 					"\r\n",
-					"while (additional_plots > 0) & (i_grow < 10):\r\n",
-					"    # grow the region with adjacent plots\r\n",
-					"    df_additional_plot = grow_plot(df_region.copy(), df_unassociated.copy())\r\n",
-					"    df_additional_plot['grow_iteration'] = i_grow\r\n",
-					"    additional_plots = df_additional_plot.shape[0]\r\n",
-					"\r\n",
-					"    # add new plants to their regions\r\n",
-					"    df_region = pd.concat([df_region, df_additional_plot])\r\n",
-					"\r\n",
-					"    # remove newly associated plants from the available list\r\n",
-					"    df_unassociated = df_unassociated.merge(df_region, how='left', left_on='idx', right_on='idx', suffixes=('', '_region'), indicator = True)\r\n",
-					"    df_unassociated = df_unassociated[df_unassociated['_merge'] == 'left_only']\r\n",
-					"    df_unassociated = df_unassociated[['plant', 'x', 'y', 'idx']]\r\n",
-					"    #df_unassociated.head(10)\r\n",
-					"\r\n",
-					"    # iteration management\r\n",
-					"    print(f\"grow {i_grow}: found {additional_plots} additional plots\")\r\n",
-					"    i_grow += 1"
+					"# build region from initial plot\r\n",
+					"df_new_region, df_unassociated = build_region(df_new_region, df_unassociated)\r\n",
+					"# add region to list \r\n",
+					"df_region = pd.concat([df_region, df_new_region])"
 				],
-				"execution_count": 23
+				"execution_count": 46
 			},
 			{
 				"cell_type": "code",
@@ -258,9 +286,9 @@
 					}
 				},
 				"source": [
-					"df_region.sort_values(by = ['region', 'plant', 'x', 'y']).head(20)"
+					"df_region.head()"
 				],
-				"execution_count": 24
+				"execution_count": 47
 			},
 			{
 				"cell_type": "code",
@@ -276,13 +304,27 @@
 					}
 				},
 				"source": [
-					"df_additional_plot = grow_plot(df_region.copy(), df_coord.copy())\r\n",
-					"\r\n",
-					"df_additional_plot = df_additional_plot.groupby('idx').max().reset_index()\r\n",
-					"\r\n",
-					"df_additional_plot.head()"
+					"df_new_region.sort_values(by = ['region', 'plant', 'x', 'y']).head(20)"
 				],
-				"execution_count": 21
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_region[['x', 'y', 'plant']].set_index(['y', 'x']).unstack()"
+				],
+				"execution_count": 54
 			}
 		]
 	}
