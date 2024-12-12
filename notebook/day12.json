@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f67726d1-dbee-4423-924f-b339b600a130"
+				"spark.autotune.trackingId": "b702f657-189a-4981-a0d2-5558a71547ae"
 			}
 		},
 		"metadata": {
@@ -54,7 +54,7 @@
 					"import pandas as pd\r\n",
 					"import numpy as np"
 				],
-				"execution_count": 594
+				"execution_count": 659
 			},
 			{
 				"cell_type": "code",
@@ -83,7 +83,7 @@
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 595
+				"execution_count": 660
 			},
 			{
 				"cell_type": "code",
@@ -107,7 +107,7 @@
 					"\r\n",
 					"df_coord.head(20)"
 				],
-				"execution_count": 596
+				"execution_count": 661
 			},
 			{
 				"cell_type": "code",
@@ -133,7 +133,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['x'] + 1"
 				],
-				"execution_count": 597
+				"execution_count": 662
 			},
 			{
 				"cell_type": "code",
@@ -159,7 +159,7 @@
 					"    elif r['direction'] == 'r':\r\n",
 					"        return r['y']"
 				],
-				"execution_count": 598
+				"execution_count": 663
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +193,7 @@
 					"\r\n",
 					"    return df_additional_plot    "
 				],
-				"execution_count": 599
+				"execution_count": 664
 			},
 			{
 				"cell_type": "code",
@@ -235,7 +235,7 @@
 					"\r\n",
 					"    return df_plot, df_unassociated"
 				],
-				"execution_count": 600
+				"execution_count": 665
 			},
 			{
 				"cell_type": "code",
@@ -276,7 +276,7 @@
 					"    # iteration management\r\n",
 					"    unassociated_plots = df_unassociated.shape[0]"
 				],
-				"execution_count": 601
+				"execution_count": 666
 			},
 			{
 				"cell_type": "code",
@@ -294,7 +294,7 @@
 				"source": [
 					"df_region[df_region['plant']=='C'].head(20)"
 				],
-				"execution_count": 602
+				"execution_count": 667
 			},
 			{
 				"cell_type": "code",
@@ -314,7 +314,7 @@
 					"#df_region_coord[df_region_coord['plant']=='C']\r\n",
 					"df_region_coord.head(10)"
 				],
-				"execution_count": 603
+				"execution_count": 668
 			},
 			{
 				"cell_type": "code",
@@ -334,7 +334,7 @@
 					"df_region_size.rename(columns={'plant': 'plot_count'}, inplace=True)\r\n",
 					"df_region_size.head(20)"
 				],
-				"execution_count": 604
+				"execution_count": 669
 			},
 			{
 				"cell_type": "code",
@@ -352,7 +352,7 @@
 				"source": [
 					"df_region[['x', 'y', 'plant']].set_index(['y', 'x']).unstack()"
 				],
-				"execution_count": 605
+				"execution_count": 670
 			},
 			{
 				"cell_type": "code",
@@ -370,7 +370,7 @@
 				"source": [
 					"df_unassociated.head()"
 				],
-				"execution_count": 606
+				"execution_count": 671
 			},
 			{
 				"cell_type": "code",
@@ -397,7 +397,7 @@
 					"df_region_perim = df_region_perim[['region', 'plant', 'x', 'y', 'direction']]\r\n",
 					"df_region_perim.head(20)"
 				],
-				"execution_count": 607
+				"execution_count": 672
 			},
 			{
 				"cell_type": "code",
@@ -417,7 +417,7 @@
 					"df_region_perim_size.rename(columns={'direction': 'perim_count'}, inplace=True)\r\n",
 					"df_region_perim_size.head(20)"
 				],
-				"execution_count": 608
+				"execution_count": 673
 			},
 			{
 				"cell_type": "code",
@@ -442,7 +442,7 @@
 					"df_answer['price'] = df_answer['plot_count'] * df_answer['perim_count']\r\n",
 					"df_answer.head()"
 				],
-				"execution_count": 609
+				"execution_count": 674
 			},
 			{
 				"cell_type": "code",
@@ -460,7 +460,7 @@
 				"source": [
 					"df_answer['price'].sum()"
 				],
-				"execution_count": 610
+				"execution_count": 675
 			},
 			{
 				"cell_type": "markdown",
@@ -493,7 +493,7 @@
 					"df_region_coord_2.drop('direction', axis=1, inplace=True)\r\n",
 					"df_region_coord_2.head(20)"
 				],
-				"execution_count": 611
+				"execution_count": 676
 			},
 			{
 				"cell_type": "code",
@@ -543,7 +543,7 @@
 					"                s = 'r'\r\n",
 					"                d = 'd'\r\n",
 					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"            #print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
 					"        elif ((d == 'd') & (s == 'r')):\r\n",
 					"            if ((region,x+1,y+1) in df_coord.index):\r\n",
 					"                x += 1\r\n",
@@ -563,7 +563,7 @@
 					"                s = 'd'\r\n",
 					"                d = 'l'\r\n",
 					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"            #print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
 					"        elif ((d == 'l') & (s == 'd')):\r\n",
 					"            if ((region,x-1,y+1) in df_coord.index):\r\n",
 					"                x -= 1\r\n",
@@ -583,7 +583,7 @@
 					"                s = 'l'\r\n",
 					"                d = 'u'\r\n",
 					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"            #print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
 					"        elif ((d == 'u') & (s == 'l')):\r\n",
 					"            if ((region,x-1,y-1) in df_coord.index):\r\n",
 					"                x -= 1\r\n",
@@ -603,9 +603,9 @@
 					"                s = 'u'\r\n",
 					"                d = 'r'\r\n",
 					"                edge_count += 1\r\n",
-					"            print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
+					"            #print(f\"walking region {region} stepping to (x={x},y={y}) heading {d} with perim on {s}, edge count = {edge_count}\")\r\n",
 					"        else:\r\n",
-					"            print(f\"walking region {region} unknown heading {d} with perim on {s}\")\r\n",
+					"            #print(f\"walking region {region} unknown heading {d} with perim on {s}\")\r\n",
 					"            keep_walking = False\r\n",
 					"\r\n",
 					"        if ((x==s_x) & (y==s_y) & (s==s_s) & (d==s_d)):\r\n",
@@ -613,7 +613,7 @@
 					"\r\n",
 					"    return edge_count, visited_plot"
 				],
-				"execution_count": 657
+				"execution_count": 677
 			},
 			{
 				"cell_type": "code",
@@ -641,7 +641,7 @@
 					"df_region_perim_tl = df_region_perim.reset_index().set_index(['region'])\r\n",
 					"df_region_perim_tl.head(20)"
 				],
-				"execution_count": 614
+				"execution_count": 678
 			},
 			{
 				"cell_type": "code",
@@ -693,7 +693,7 @@
 					"\r\n",
 					"df_region_perim_tl['edge_count'] = edge_count"
 				],
-				"execution_count": 654
+				"execution_count": 679
 			},
 			{
 				"cell_type": "code",
@@ -715,7 +715,7 @@
 					"df_answer_2['price'] = df_answer_2['plot_count'] * df_answer_2['edge_count']\r\n",
 					"df_answer_2[df_answer_2['price']!=0].head(10)"
 				],
-				"execution_count": 617
+				"execution_count": 680
 			},
 			{
 				"cell_type": "code",
@@ -735,9 +735,10 @@
 					"\r\n",
 					"# try 1 = 1118404 -- too high\r\n",
 					"# try 2 = 1077374 -- too high\r\n",
-					"# try 3 = 1261404 -- too high"
+					"# try 3 = 1261404 -- too high\r\n",
+					"# try 4 = 921636 -- just right"
 				],
-				"execution_count": 618
+				"execution_count": 681
 			},
 			{
 				"cell_type": "code",
@@ -755,84 +756,7 @@
 				"source": [
 					"ec, vp = walk_region_perim(584, 114, 129, 'u', 'r', df_region_coord_2.copy())"
 				],
-				"execution_count": 658
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_region_perim_tl[df_region_perim_tl['plant'] == 'K']"
-				],
-				"execution_count": 655
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"dups = df_answer_2[df_answer_2['price']!=0].groupby('region')['plot_count'].count().to_frame()\r\n",
-					"dups[dups['plot_count'] > 1].head(20)"
-				],
-				"execution_count": 649
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_reg = df_answer_2.loc[([2, 6, 9, 21, 32, 51, 53, 60, 62, 66, 67, 86, 91, 110, 117, 135, 138, 171, 172, 179],slice(None),slice(None)), :]\r\n",
-					"\r\n",
-					"df_reg[df_reg['price']!=0].head(50)"
-				],
-				"execution_count": 651
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_reg = df_answer_2.loc[(slice(None),['I'],slice(None)), :]\r\n",
-					"\r\n",
-					"df_reg[df_reg['price']!=0].head(20)"
-				],
-				"execution_count": 645
+				"execution_count": 682
 			}
 		]
 	}
