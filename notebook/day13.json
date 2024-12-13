@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "cd0ac0c0-250e-44bb-9ae5-b1d2b1ba0e82"
+				"spark.autotune.trackingId": "6576278b-00c3-4fda-8c8e-593c0af15e73"
 			}
 		},
 		"metadata": {
@@ -55,7 +55,7 @@
 					"import math\r\n",
 					"import re"
 				],
-				"execution_count": 184
+				"execution_count": 288
 			},
 			{
 				"cell_type": "code",
@@ -79,7 +79,7 @@
 					"\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 185
+				"execution_count": 289
 			},
 			{
 				"cell_type": "code",
@@ -118,7 +118,7 @@
 					"\r\n",
 					"    return row"
 				],
-				"execution_count": 186
+				"execution_count": 290
 			},
 			{
 				"cell_type": "code",
@@ -158,7 +158,7 @@
 					"    df_combinations = pd.merge(df_a, df_b, on='join_key')\r\n",
 					"    return df_combinations[['a', 'b']]"
 				],
-				"execution_count": 187
+				"execution_count": 291
 			},
 			{
 				"cell_type": "code",
@@ -183,9 +183,10 @@
 					"df_machine_behavior = df_machine_behavior[['machine_id','title','value']].set_index(['machine_id', 'title']).unstack()\r\n",
 					"df_machine_behavior.columns = df_machine_behavior.columns.droplevel(0)\r\n",
 					"df_machine_behavior = df_machine_behavior.apply(pd.to_numeric)\r\n",
+					"df_machine_behavior_2 = df_machine_behavior.copy()\r\n",
 					"#df_machine_behavior.head(20)"
 				],
-				"execution_count": 188
+				"execution_count": 292
 			},
 			{
 				"cell_type": "code",
@@ -210,7 +211,7 @@
 					"df_machine_behavior = df_machine_behavior.drop(columns=['max_ax', 'max_ay', 'max_bx', 'max_by'])\r\n",
 					"df_machine_behavior.head(20)"
 				],
-				"execution_count": 189
+				"execution_count": 293
 			},
 			{
 				"cell_type": "code",
@@ -237,7 +238,7 @@
 					"    \r\n",
 					"    return df_success['cost'].min()"
 				],
-				"execution_count": 190
+				"execution_count": 294
 			},
 			{
 				"cell_type": "code",
@@ -253,14 +254,19 @@
 					}
 				},
 				"source": [
-					"df_machine_behavior['winning_cost'] = df_machine_behavior.apply(winning_cost, axis= 1)\r\n",
-					"df_machine_behavior.head()"
+					"df_answer = df_machine_behavior.copy()\r\n",
+					"df_answer['winning_cost'] = df_answer.apply(winning_cost, axis= 1)\r\n",
+					"df_answer['winning_cost'].sum()"
 				],
-				"execution_count": 191
+				"execution_count": 295
 			},
 			{
-				"cell_type": "markdown",
+				"cell_type": "code",
 				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
 					"nteract": {
 						"transient": {
 							"deleting": false
@@ -268,10 +274,46 @@
 					}
 				},
 				"source": [
-					"it costs 3 tokens to push the A button and 1 token to push the B button.\r\n",
+					"def derive_cost(machine_details):\r\n",
 					"\r\n",
-					"what is the smallest number of tokens you would have to spend to win "
-				]
+					"    ax = machine_details['prize_x'] / machine_details['button_a_x']\r\n",
+					"    ay = machine_details['prize_y'] / machine_details['button_a_y']\r\n",
+					"\r\n",
+					"    bx = machine_details['prize_x'] / machine_details['button_b_x']\r\n",
+					"    by = machine_details['prize_y'] / machine_details['button_b_y']\r\n",
+					"\r\n",
+					"    if (bx == by) & (bx == math.floor(bx)) & (by == math.floor(by)):\r\n",
+					"        # if can win on just b then do so\r\n",
+					"        a = 0\r\n",
+					"        b = int(bx)\r\n",
+					"    elif (ax == ay) & (ax == math.floor(ax)) & (ay == math.floor(ay)):\r\n",
+					"        # if can win on just a then do so\r\n",
+					"        a = int(ax)\r\n",
+					"        b = 0\r\n",
+					"    else:\r\n",
+					"        b = ((machine_details['prize_y'] * machine_details['button_a_x']) - (machine_details['prize_x'] * machine_details['button_a_y'])) / ((machine_details['button_a_x'] * machine_details['button_b_y']) - (machine_details['button_b_x'] * machine_details['button_a_y']))\r\n",
+					"\r\n",
+					"        if b != math.floor(b):\r\n",
+					"            a = 0\r\n",
+					"            b = 0\r\n",
+					"        else:\r\n",
+					"            a = int((machine_details['prize_x'] - (machine_details['button_b_x'] * b)) / machine_details['button_a_x'])\r\n",
+					"            b = int(b)\r\n",
+					"\r\n",
+					"        if (a*machine_details['button_a_x'] + b*machine_details['button_b_x']) != machine_details['prize_x']:\r\n",
+					"            a = 0\r\n",
+					"            b = 0\r\n",
+					"        elif (a*machine_details['button_a_y'] + b*machine_details['button_b_y']) != machine_details['prize_y']:\r\n",
+					"            a = 0\r\n",
+					"            b = 0\r\n",
+					"\r\n",
+					"    machine_details['derive_a'] = a\r\n",
+					"    machine_details['derive_b'] = b\r\n",
+					"    machine_details['derive_cost'] = 3*a+b\r\n",
+					"\r\n",
+					"    return machine_details"
+				],
+				"execution_count": 338
 			},
 			{
 				"cell_type": "code",
@@ -287,9 +329,117 @@
 					}
 				},
 				"source": [
-					"df_machine_behavior['winning_cost'].sum()"
+					"df_answer_2 = df_machine_behavior_2.copy()\r\n",
+					"df_answer_2['prize_x'] = df_answer_2['prize_x'] + 10000000000000\r\n",
+					"df_answer_2['prize_y'] = df_answer_2['prize_y'] + 10000000000000\r\n",
+					"#df_answer_2.loc[len(df_answer_2)] = [1,2,1,2,10,20]\r\n",
+					"\r\n",
+					"df_answer_2 = df_answer_2.apply(derive_cost, axis=1)\r\n",
+					"df_answer_2.head()"
 				],
-				"execution_count": 192
+				"execution_count": 339
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 875318608908 -- too low\r\n",
+					"# 104689813275846 -- too high\r\n",
+					"# 103570327981381 -- removed where check failed (float fun)\r\n",
+					"df_answer_2['derive_cost'].sum()"
+				],
+				"execution_count": 340
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_check = df_answer_2[df_answer_2['derive_a'] != 0].copy()\r\n",
+					"\r\n",
+					"df_check['check_x'] = df_check['prize_x'] - (df_check['button_a_x'] * df_check['derive_a']) - (df_check['button_b_x'] * df_check['derive_b'])\r\n",
+					"df_check['check_y'] = df_check['prize_y'] - (df_check['button_a_y'] * df_check['derive_a']) - (df_check['button_b_y'] * df_check['derive_b'])\r\n",
+					"df_check[(df_check['check_x'] != 0) | (df_check['check_y'] != 0)].head()"
+				],
+				"execution_count": 341
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_answer_2['check'] = df_answer_2.apply(lambda row: math.floor(row.derive_a), axis=1)\r\n",
+					"df_answer_2[df_answer_2['check'] != df_answer_2['derive_a']]"
+				],
+				"execution_count": 329
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_answer_2.loc[0]"
+				],
+				"execution_count": 321
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_answer_2 = df_machine_behavior_2.copy()\r\n",
+					"df_answer_2['prize_x'] = df_answer_2['prize_x'] + 10000000000000\r\n",
+					"df_answer_2['prize_y'] = df_answer_2['prize_y'] + 10000000000000\r\n",
+					"df_answer_2.loc[0]\r\n",
+					"#derive_cost(df_answer_2.loc[0])"
+				],
+				"execution_count": 324
 			},
 			{
 				"cell_type": "code",
