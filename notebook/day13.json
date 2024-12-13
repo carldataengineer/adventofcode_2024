@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "96967e21-576a-43a7-b43e-1e08dd07dfed"
+				"spark.autotune.trackingId": "7aba36f7-9275-40d9-84fc-4fb48d0e7f79"
 			}
 		},
 		"metadata": {
@@ -186,7 +186,26 @@
 					}
 				},
 				"source": [
-					""
+					"solve_machine(df_machine_behavior.loc[0])"
+				],
+				"execution_count": 112
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def solve_machine(machine_details):\r\n",
+					"    machine_details['button_a_x']"
 				],
 				"execution_count": null
 			}
