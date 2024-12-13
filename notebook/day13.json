@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "0c076385-5e73-41f5-8cd7-6ff4f486cc72"
+				"spark.autotune.trackingId": "edeed561-60d6-4c37-919a-671c29886c87"
 			}
 		},
 		"metadata": {
@@ -141,9 +141,36 @@
 					"df_machine_behavior = df_machine_behavior.explode('xy')\r\n",
 					"df_machine_behavior = df_machine_behavior.apply(split_behaviour, axis=1)\r\n",
 					"df_machine_behavior = df_machine_behavior[['machine_id','title','value']].set_index(['machine_id', 'title']).unstack()\r\n",
+					"df_machine_behavior.columns = df_machine_behavior.columns.droplevel(0)\r\n",
+					"df_machine_behavior = df_machine_behavior.apply(pd.to_numeric)\r\n",
 					"df_machine_behavior.head(20)"
 				],
-				"execution_count": 83
+				"execution_count": 102
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_machine_behavior['max_ax'] = df_machine_behavior['prize_x'] / df_machine_behavior['button_a_x']\r\n",
+					"df_machine_behavior['max_ay'] = df_machine_behavior['prize_y'] / df_machine_behavior['button_a_y']\r\n",
+					"df_machine_behavior['max_bx'] = df_machine_behavior['prize_x'] / df_machine_behavior['button_b_x']\r\n",
+					"df_machine_behavior['max_by'] = df_machine_behavior['prize_y'] / df_machine_behavior['button_b_y']\r\n",
+					"df_machine_behavior['max_a'] = df_machine_behavior[['max_ax','max_ay']].min(axis=1)\r\n",
+					"df_machine_behavior['max_b'] = df_machine_behavior[['max_bx','max_by']].min(axis=1)\r\n",
+					"df_machine_behavior = df_machine_behavior.drop(columns=['max_ax', 'max_ay', 'max_bx', 'max_by'])\r\n",
+					"df_machine_behavior.head(20)"
+				],
+				"execution_count": 105
 			},
 			{
 				"cell_type": "code",
