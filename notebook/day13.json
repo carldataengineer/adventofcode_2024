@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "7aba36f7-9275-40d9-84fc-4fb48d0e7f79"
+				"spark.autotune.trackingId": "9cc660c1-21df-4751-98e1-7dd2bd2c6348"
 			}
 		},
 		"metadata": {
@@ -206,6 +206,25 @@
 				"source": [
 					"def solve_machine(machine_details):\r\n",
 					"    machine_details['button_a_x']"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"it costs 3 tokens to push the A button and 1 token to push the B button.\r\n",
+					"what is the smallest number of tokens you would have to spend to win "
 				],
 				"execution_count": null
 			}
