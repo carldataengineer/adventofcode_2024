@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b4fe4e15-8b5f-404c-80aa-5221852d6904"
+				"spark.autotune.trackingId": "0c076385-5e73-41f5-8cd7-6ff4f486cc72"
 			}
 		},
 		"metadata": {
@@ -52,9 +52,10 @@
 				"cell_type": "code",
 				"source": [
 					"import pandas as pd\r\n",
-					"import math"
+					"import math\r\n",
+					"import re"
 				],
-				"execution_count": 11
+				"execution_count": 63
 			},
 			{
 				"cell_type": "code",
@@ -76,9 +77,9 @@
 					"                    , names=['behaviour']\r\n",
 					"                    , colspecs=[[0,50]])\r\n",
 					"\r\n",
-					"df_input.head(20)"
+					"df_input.head()"
 				],
-				"execution_count": 12
+				"execution_count": 27
 			},
 			{
 				"cell_type": "code",
@@ -94,10 +95,55 @@
 					}
 				},
 				"source": [
-					"df_input['machine_id'] = df_input.apply(lambda row: math.floor(int(row.name)/3), axis=1)\r\n",
-					"df_input.head(20)"
+					"def split_behaviour(row):\r\n",
+					"    if row['behaviour_title'] == 'Button A':\r\n",
+					"        row['title'] = 'button_a_' + row['xy']\r\n",
+					"        if row['xy'] == 'x':\r\n",
+					"            row['value'] = re.findall(r\"X\\+(\\d*),\\sY\\+(\\d*)\", row['behaviour_value'])[0][0]\r\n",
+					"        elif row['xy'] == 'y':\r\n",
+					"            row['value'] = re.findall(r\"X\\+(\\d*),\\sY\\+(\\d*)\", row['behaviour_value'])[0][1]\r\n",
+					"\r\n",
+					"    elif row['behaviour_title'] == 'Button B':\r\n",
+					"        row['title'] = 'button_b_' + row['xy']\r\n",
+					"        if row['xy'] == 'x':\r\n",
+					"            row['value'] = re.findall(r\"X\\+(\\d*),\\sY\\+(\\d*)\", row['behaviour_value'])[0][0]\r\n",
+					"        elif row['xy'] == 'y':\r\n",
+					"            row['value'] = re.findall(r\"X\\+(\\d*),\\sY\\+(\\d*)\", row['behaviour_value'])[0][1]\r\n",
+					"    else:\r\n",
+					"        row['title'] = 'prize_' + row['xy']\r\n",
+					"        if row['xy'] == 'x':\r\n",
+					"            row['value'] = re.findall(r\"X\\=(\\d*),\\sY\\=(\\d*)\", row['behaviour_value'])[0][0]\r\n",
+					"        elif row['xy'] == 'y':\r\n",
+					"            row['value'] = re.findall(r\"X\\=(\\d*),\\sY\\=(\\d*)\", row['behaviour_value'])[0][1]\r\n",
+					"\r\n",
+					"    return row"
 				],
-				"execution_count": 19
+				"execution_count": 77
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_machine_behavior = df_input.copy()\r\n",
+					"df_machine_behavior['machine_id'] = df_machine_behavior.apply(lambda row: math.floor(int(row.name)/3), axis=1)\r\n",
+					"df_machine_behavior[['behaviour_title', 'behaviour_value']] = df_machine_behavior['behaviour'].str.split(':', expand=True)\r\n",
+					"df_machine_behavior['xy'] = [['x','y']] * df_machine_behavior.shape[0]\r\n",
+					"df_machine_behavior = df_machine_behavior.explode('xy')\r\n",
+					"df_machine_behavior = df_machine_behavior.apply(split_behaviour, axis=1)\r\n",
+					"df_machine_behavior = df_machine_behavior[['machine_id','title','value']].set_index(['machine_id', 'title']).unstack()\r\n",
+					"df_machine_behavior.head(20)"
+				],
+				"execution_count": 83
 			},
 			{
 				"cell_type": "code",
