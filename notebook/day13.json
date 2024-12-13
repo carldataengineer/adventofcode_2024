@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "edeed561-60d6-4c37-919a-671c29886c87"
+				"spark.autotune.trackingId": "96967e21-576a-43a7-b43e-1e08dd07dfed"
 			}
 		},
 		"metadata": {
@@ -165,12 +165,12 @@
 					"df_machine_behavior['max_ay'] = df_machine_behavior['prize_y'] / df_machine_behavior['button_a_y']\r\n",
 					"df_machine_behavior['max_bx'] = df_machine_behavior['prize_x'] / df_machine_behavior['button_b_x']\r\n",
 					"df_machine_behavior['max_by'] = df_machine_behavior['prize_y'] / df_machine_behavior['button_b_y']\r\n",
-					"df_machine_behavior['max_a'] = df_machine_behavior[['max_ax','max_ay']].min(axis=1)\r\n",
-					"df_machine_behavior['max_b'] = df_machine_behavior[['max_bx','max_by']].min(axis=1)\r\n",
+					"df_machine_behavior['max_a'] = df_machine_behavior[['max_ax','max_ay']].min(axis=1).astype(int)\r\n",
+					"df_machine_behavior['max_b'] = df_machine_behavior[['max_bx','max_by']].min(axis=1).astype(int)\r\n",
 					"df_machine_behavior = df_machine_behavior.drop(columns=['max_ax', 'max_ay', 'max_bx', 'max_by'])\r\n",
 					"df_machine_behavior.head(20)"
 				],
-				"execution_count": 105
+				"execution_count": 106
 			},
 			{
 				"cell_type": "code",
