@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b00da641-5cb0-406a-859e-a927de41f437"
+				"spark.autotune.trackingId": "8a6a5c1b-8ad3-46be-8ec1-5c23ede7c90f"
 			}
 		},
 		"metadata": {
@@ -52,10 +52,11 @@
 				"cell_type": "code",
 				"source": [
 					"import pandas as pd\r\n",
+					"import numpy as np\r\n",
 					"import math\r\n",
 					"import re"
 				],
-				"execution_count": 161
+				"execution_count": 232
 			},
 			{
 				"cell_type": "code",
@@ -306,31 +307,55 @@
 					"df_robot_behavior_2['cur_y'] = df_robot_behavior_2['py']\r\n",
 					"df_robot_behavior_2.copy()\r\n",
 					"\r\n",
-					"while (found_tree == False) & (seconds < 100000):\r\n",
+					"while ((found_tree == False) & (seconds < (x_tiles * y_tiles))):\r\n",
 					"    seconds += 1\r\n",
 					"\r\n",
 					"    df_robot_behavior_2['cur_x'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_x) + int(row.vx))%x_tiles)+1, axis=1)\r\n",
 					"    df_robot_behavior_2['cur_y'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_y) + int(row.vy))%y_tiles)+1, axis=1)\r\n",
 					"\r\n",
 					"    # evaluate\r\n",
+					"    #std_x = df_robot_behavior_2['cur_x'].std()\r\n",
+					"    #std_y = df_robot_behavior_2['cur_y'].std()\r\n",
 					"\r\n",
-					"    std_x = df_robot_behavior_2['cur_x'].std()\r\n",
-					"    std_y = df_robot_behavior_2['cur_y'].std()\r\n",
+					"    # size = 40\r\n",
+					"    #tl_cells = df_robot_behavior_2[(df_robot_behavior_2['cur_x'] < size) & (df_robot_behavior_2['cur_y'] < size)].shape[0]\r\n",
+					"    #tr_cells = df_robot_behavior_2[(df_robot_behavior_2['cur_x'] < size) & (df_robot_behavior_2['cur_y'] >= (y_tiles - size))].shape[0]\r\n",
 					"\r\n",
-					"    size = 40\r\n",
-					"    tl_cells = df_robot_behavior_2[(df_robot_behavior_2['cur_x'] < size) & (df_robot_behavior_2['cur_y'] < size)].shape[0]\r\n",
-					"    tr_cells = df_robot_behavior_2[(df_robot_behavior_2['cur_x'] < size) & (df_robot_behavior_2['cur_y'] >= (y_tiles - size))].shape[0]\r\n",
+					"    #min_x = df_robot_behavior_2['cur_x'].min()\r\n",
+					"    #max_x = df_robot_behavior_2['cur_x'].max()\r\n",
+					"    #min_y = df_robot_behavior_2['cur_y'].min()\r\n",
+					"    #max_y = df_robot_behavior_2['cur_y'].max()\r\n",
+					"    #results += [[seconds, std_x, std_y, tl_cells, tr_cells, min_x, max_x, min_y, max_y]]\r\n",
 					"\r\n",
-					"    min_x = df_robot_behavior_2['cur_x'].min()\r\n",
-					"    max_x = df_robot_behavior_2['cur_x'].max()\r\n",
-					"    min_y = df_robot_behavior_2['cur_y'].min()\r\n",
-					"    max_y = df_robot_behavior_2['cur_y'].max()\r\n",
-					"    results += [[seconds, std_x, std_y, tl_cells, tr_cells, min_x, max_x, min_y, max_y]]\r\n",
+					"    cur_x_var = np.var(df_robot_behavior_2['cur_x'])\r\n",
+					"    cur_y_var = np.var(df_robot_behavior_2['cur_y'])\r\n",
+					"    results += [[cur_x_var, cur_y_var]]\r\n",
 					"\r\n",
 					"print (F\"Elapsed {seconds} seconds\")\r\n",
 					""
 				],
-				"execution_count": 229
+				"execution_count": 236
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_results = pd.DataFrame(results)\r\n",
+					"df_results.columns = ['cur_x_var', 'cur_y_var']\r\n",
+					"df_results['total_var'] = df_results['cur_x_var'] + df_results['cur_y_var']\r\n",
+					"df_results.sort_values('total_var', ascending=False).head(20)"
+				],
+				"execution_count": 240
 			},
 			{
 				"cell_type": "code",
@@ -354,7 +379,7 @@
 					"df_results['corner_cells'] = df_results['tl_cells'] + df_results['tr_cells']\r\n",
 					"df_results.sort_values('corner_cells', ascending=True).head(20)"
 				],
-				"execution_count": 228
+				"execution_count": 231
 			},
 			{
 				"cell_type": "code",
