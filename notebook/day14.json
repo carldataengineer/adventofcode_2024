@@ -1,0 +1,258 @@
+{
+	"name": "day14",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "90ada351-f0ca-4609-80d3-69fb678e7d97"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd\r\n",
+					"import math\r\n",
+					"import re"
+				],
+				"execution_count": 27
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"x_tiles = 11\r\n",
+					"y_tiles = 7\r\n",
+					"x_mid = (x_tiles + 1)/ 2\r\n",
+					"y_mid = (y_tiles + 1)/ 2\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day14/test_input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , names=['behaviour']\r\n",
+					"                    , colspecs=[[0,50]])\r\n",
+					"\r\n",
+					"df_input.head()"
+				],
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def split_behaviour(row):\r\n",
+					"    behaviours = re.findall(r\"p=(\\d*),(\\d*)\\sv=(-?\\d*),(-?\\d*)\", row['behaviour'])[0]\r\n",
+					"    row['px'] = behaviours[0]\r\n",
+					"    row['py'] = behaviours[1]\r\n",
+					"    row['vx'] = behaviours[2]\r\n",
+					"    row['vy'] = behaviours[3]\r\n",
+					"\r\n",
+					"    return row"
+				],
+				"execution_count": 29
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"split_behaviour(df_input.loc[1])['px']"
+				],
+				"execution_count": 30
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_robot_behavior = df_input.copy()\r\n",
+					"df_robot_behavior = df_robot_behavior.apply(split_behaviour, axis=1)\r\n",
+					"df_robot_behavior.head()"
+				],
+				"execution_count": 31
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_robot_behavior['px_100s'] = df_robot_behavior.apply(lambda row: ((int(row.px) + (int(row.vx)*100))%x_tiles)+1, axis=1)\r\n",
+					"df_robot_behavior['py_100s'] = df_robot_behavior.apply(lambda row: ((int(row.py) + (int(row.vy)*100))%y_tiles)+1, axis=1)\r\n",
+					"df_robot_behavior.head(10)"
+				],
+				"execution_count": 40
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_robot_behavior['q_x'] = df_robot_behavior.apply(lambda row: 'R' if row.px_100s>x_mid else 'L' if row.px_100s<x_mid else 'M', axis=1)\r\n",
+					"df_robot_behavior['q_y'] = df_robot_behavior.apply(lambda row: 'B' if row.py_100s>y_mid else 'T' if row.py_100s<y_mid else 'M', axis=1)\r\n",
+					"df_robot_behavior.head(20)"
+				],
+				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_results = df_robot_behavior.groupby(['q_x','q_y'])['behaviour'].count().to_frame()\r\n",
+					"df_results.columns = ['count']\r\n",
+					"\r\n",
+					"filter_set = [('L', 'T'), ('L', 'B'), ('R', 'T'), ('R', 'B')]\r\n",
+					"df_results = df_results.loc[filter_set]\r\n",
+					"df_results.head()"
+				],
+				"execution_count": 59
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"result = 1\r\n",
+					"\r\n",
+					"for val in df_results['count']:\r\n",
+					"    result = result * val\r\n",
+					"    \r\n",
+					"print(result)"
+				],
+				"execution_count": 65
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
