@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "047c2280-30c1-4590-b08d-baa7b9856c78"
+				"spark.autotune.trackingId": "f8a09c2f-e108-400f-8282-7497a067fb1c"
 			}
 		},
 		"metadata": {
@@ -305,7 +305,7 @@
 					"df_robot_behavior_2['cur_y'] = df_robot_behavior_2['py']\r\n",
 					"df_robot_behavior_2.copy()\r\n",
 					"\r\n",
-					"while (found_tree == False) & (seconds < 1000):\r\n",
+					"while (found_tree == False) & (seconds < 10000):\r\n",
 					"    seconds += 1\r\n",
 					"\r\n",
 					"    df_robot_behavior_2['cur_x'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_x) + int(row.vx))%x_tiles)+1, axis=1)\r\n",
@@ -326,7 +326,7 @@
 					"print (F\"Elapsed {seconds} seconds\")\r\n",
 					""
 				],
-				"execution_count": 124
+				"execution_count": 126
 			},
 			{
 				"cell_type": "code",
@@ -352,9 +352,9 @@
 					"#df_grid.head(20)\r\n",
 					"\r\n",
 					"df_positions = df_grid.merge(df_robot_locations, how='left', left_index=True, right_index=True)\r\n",
-					"df_positions.unstack()"
+					"df_positions.unstack().iloc[30:70, 30:70] "
 				],
-				"execution_count": 125
+				"execution_count": 127
 			},
 			{
 				"cell_type": "code",
