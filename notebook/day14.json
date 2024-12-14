@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1a8efbfd-cb69-4bc5-9005-9d156c654095"
+				"spark.autotune.trackingId": "047c2280-30c1-4590-b08d-baa7b9856c78"
 			}
 		},
 		"metadata": {
@@ -55,7 +55,7 @@
 					"import math\r\n",
 					"import re"
 				],
-				"execution_count": 66
+				"execution_count": 79
 			},
 			{
 				"cell_type": "code",
@@ -84,7 +84,7 @@
 					"\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 67
+				"execution_count": 80
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"\r\n",
 					"    return row"
 				],
-				"execution_count": 68
+				"execution_count": 81
 			},
 			{
 				"cell_type": "code",
@@ -127,7 +127,7 @@
 				"source": [
 					"split_behaviour(df_input.loc[1])['px']"
 				],
-				"execution_count": 69
+				"execution_count": 82
 			},
 			{
 				"cell_type": "code",
@@ -145,9 +145,10 @@
 				"source": [
 					"df_robot_behavior = df_input.copy()\r\n",
 					"df_robot_behavior = df_robot_behavior.apply(split_behaviour, axis=1)\r\n",
+					"df_robot_behavior_2 = df_robot_behavior.copy()\r\n",
 					"df_robot_behavior.head()"
 				],
-				"execution_count": 70
+				"execution_count": 83
 			},
 			{
 				"cell_type": "code",
@@ -167,7 +168,7 @@
 					"df_robot_behavior['py_100s'] = df_robot_behavior.apply(lambda row: ((int(row.py) + (int(row.vy)*100))%y_tiles)+1, axis=1)\r\n",
 					"df_robot_behavior.head(10)"
 				],
-				"execution_count": 71
+				"execution_count": 84
 			},
 			{
 				"cell_type": "code",
@@ -187,7 +188,7 @@
 					"df_robot_behavior['q_y'] = df_robot_behavior.apply(lambda row: 'B' if row.py_100s>y_mid else 'T' if row.py_100s<y_mid else 'M', axis=1)\r\n",
 					"df_robot_behavior.head(20)"
 				],
-				"execution_count": 72
+				"execution_count": 85
 			},
 			{
 				"cell_type": "code",
@@ -210,7 +211,7 @@
 					"df_results = df_results.loc[filter_set]\r\n",
 					"df_results.head()"
 				],
-				"execution_count": 73
+				"execution_count": 86
 			},
 			{
 				"cell_type": "code",
@@ -233,7 +234,127 @@
 					"    \r\n",
 					"print(result)"
 				],
-				"execution_count": 74
+				"execution_count": 87
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"part 2"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def get_grid(x,y):\r\n",
+					"\r\n",
+					"    x_values = []\r\n",
+					"    y_values = []\r\n",
+					"\r\n",
+					"    for i in range(1,x+1):\r\n",
+					"        x_values.append(i)\r\n",
+					"        df_x = pd.DataFrame(x_values)\r\n",
+					"        df_x.columns = ['x']\r\n",
+					"        df_x['join_key'] = 0\r\n",
+					"    for i in range(1,y+1):\r\n",
+					"        y_values.append(i)\r\n",
+					"        df_y = pd.DataFrame(y_values)\r\n",
+					"        df_y.columns = ['y']\r\n",
+					"        df_y['join_key'] = 0\r\n",
+					"\r\n",
+					"    df_combinations = pd.merge(df_x, df_y, on='join_key')\r\n",
+					"    return df_combinations[['x', 'y']]"
+				],
+				"execution_count": 122
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"seconds = 0\r\n",
+					"found_tree = False\r\n",
+					"\r\n",
+					"df_robot_behavior_2['cur_x'] = df_robot_behavior_2['px']\r\n",
+					"df_robot_behavior_2['cur_y'] = df_robot_behavior_2['py']\r\n",
+					"df_robot_behavior_2.copy()\r\n",
+					"\r\n",
+					"while (found_tree == False) & (seconds < 1000):\r\n",
+					"    seconds += 1\r\n",
+					"\r\n",
+					"    df_robot_behavior_2['cur_x'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_x) + int(row.vx))%x_tiles)+1, axis=1)\r\n",
+					"    df_robot_behavior_2['cur_y'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_y) + int(row.vy))%y_tiles)+1, axis=1)\r\n",
+					"    df_robot_behavior_2.head(20)\r\n",
+					"\r\n",
+					"    # evaluate\r\n",
+					"    #if df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid].shape[0] > 50:\r\n",
+					"    #    found_tree = True\r\n",
+					"\r\n",
+					"    if (  (df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid-1].shape[0] == df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid + 1].shape[0])\r\n",
+					"        & (df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid-2].shape[0] == df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid + 2].shape[0])\r\n",
+					"        & (df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid-3].shape[0] == df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid + 3].shape[0])\r\n",
+					"        & (df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid-4].shape[0] == df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid + 4].shape[0])\r\n",
+					"        & (df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid-5].shape[0] == df_robot_behavior_2[df_robot_behavior_2['cur_x'] == x_mid + 5].shape[0])):\r\n",
+					"        found_tree = True\r\n",
+					"\r\n",
+					"print (F\"Elapsed {seconds} seconds\")\r\n",
+					""
+				],
+				"execution_count": 124
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_robot_locations = df_robot_behavior_2.groupby(['cur_y','cur_x'])['behaviour'].count().to_frame()\r\n",
+					"df_robot_locations.index.names = ['y','x']\r\n",
+					"df_robot_locations.columns = ['robot_count']\r\n",
+					"#df_robot_locations.head()\r\n",
+					"\r\n",
+					"df_grid = get_grid(101,103)\r\n",
+					"df_grid = df_grid.set_index(['y','x'])\r\n",
+					"#df_grid.head(20)\r\n",
+					"\r\n",
+					"df_positions = df_grid.merge(df_robot_locations, how='left', left_index=True, right_index=True)\r\n",
+					"df_positions.unstack()"
+				],
+				"execution_count": 125
 			},
 			{
 				"cell_type": "code",
