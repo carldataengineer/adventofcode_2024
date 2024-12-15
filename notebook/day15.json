@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "32ecf3c5-71bd-467b-b776-e17ab43107e4"
+				"spark.autotune.trackingId": "866444b9-4a9d-41d6-88ee-6684c305a546"
 			}
 		},
 		"metadata": {
@@ -190,6 +190,24 @@
 					"    return y_r, x_r, df_l"
 				],
 				"execution_count": 58
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_locations.query(\"y == 1 & x >= 3\")"
+				],
+				"execution_count": 68
 			},
 			{
 				"cell_type": "code",
