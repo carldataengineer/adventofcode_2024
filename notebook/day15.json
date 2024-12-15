@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "cd49d816-9e58-43f2-bf20-32c14c572b82"
+				"spark.autotune.trackingId": "312c5c21-5a3e-4fae-a567-235fb1a4323f"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 276
+				"execution_count": 325
 			},
 			{
 				"cell_type": "code",
@@ -69,20 +69,20 @@
 					}
 				},
 				"source": [
-					"x_tiles = 10\r\n",
+					"x_tiles = 50\r\n",
 					"\r\n",
 					"col_specs = []\r\n",
 					"for i in range(x_tiles):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/test2_input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"y_tiles = df_input.shape[0]\r\n",
 					"\r\n",
-					"df_input_moves = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/test2_moves.txt\"\\\r\n",
+					"df_input_moves = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/moves.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , names=['moves']\r\n",
@@ -90,7 +90,7 @@
 					"\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 277
+				"execution_count": 326
 			},
 			{
 				"cell_type": "code",
@@ -133,7 +133,8 @@
 					"\r\n",
 					"    if look_ahead == '#':\r\n",
 					"        # do nothing\r\n",
-					"        print (f\"    See: {look_ahead} stop\")\r\n",
+					"        nothing = True\r\n",
+					"        # print (f\"    See: {look_ahead} stop\")\r\n",
 					"    elif look_ahead == '.':\r\n",
 					"        # remove rebot reference\r\n",
 					"        df_l.loc[(y_r, x_r)] = '.'\r\n",
@@ -145,7 +146,7 @@
 					"        # place rebot reference\r\n",
 					"        df_l.loc[(y_r, x_r)] = '@'\r\n",
 					"\r\n",
-					"        print (f\"    See: {look_ahead} move a step\")\r\n",
+					"        #print (f\"    See: {look_ahead} move a step\")\r\n",
 					"    else:\r\n",
 					"        # evaluate\r\n",
 					"        iBoxCnt = 0\r\n",
@@ -167,7 +168,7 @@
 					"\r\n",
 					"        # move\r\n",
 					"        if iSpaceCnt > 0:\r\n",
-					"            print (f\"    See: {look_ahead} space found in {iBoxCnt} steps, {df_ahead.shape[0]} positions\")\r\n",
+					"            #print (f\"    See: {look_ahead} space found in {iBoxCnt} steps, {df_ahead.shape[0]} positions\")\r\n",
 					"\r\n",
 					"            # remove rebot reference\r\n",
 					"            df_l.loc[(y_r, x_r)] = '.'\r\n",
@@ -182,32 +183,12 @@
 					"            # place box\r\n",
 					"            df_l.loc[(y_r + (y_m*iBoxCnt), x_r + (x_m*iBoxCnt))] = 'O'\r\n",
 					"        else:\r\n",
-					"            print (f\"    See: {look_ahead} but no space found\")\r\n",
+					"            nothing = True\r\n",
+					"            # print (f\"    See: {look_ahead} but no space found\")\r\n",
 					"    \r\n",
 					"    return y_r, x_r, df_l"
 				],
-				"execution_count": 278
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"y_r = 4\r\n",
-					"x_r = 5\r\n",
-					"q = f\"y == {y_r} & x < {x_r}\"\r\n",
-					"df_locations.query(q)['contents'].iloc[4]"
-				],
-				"execution_count": 279
+				"execution_count": 327
 			},
 			{
 				"cell_type": "code",
@@ -230,7 +211,7 @@
 					"#df_moves.index.name = 'move_id'\r\n",
 					"#df_moves.head()"
 				],
-				"execution_count": 280
+				"execution_count": 328
 			},
 			{
 				"cell_type": "code",
@@ -257,7 +238,7 @@
 					"\r\n",
 					"#df_locations.head(30)"
 				],
-				"execution_count": 281
+				"execution_count": 329
 			},
 			{
 				"cell_type": "code",
@@ -275,13 +256,52 @@
 				"source": [
 					"#for m in lst_moves[0:9]:\r\n",
 					"for m in lst_moves:\r\n",
-					"    print (f\"Robot at ({robot_y}, {robot_x}), moving: {m}\")\r\n",
+					"    #print (f\"Robot at ({robot_y}, {robot_x}), moving: {m}\")\r\n",
 					"\r\n",
 					"    robot_y, robot_x, df_locations = robot_move(robot_y,robot_x,df_locations,m)\r\n",
 					"\r\n",
 					"df_locations.unstack()"
 				],
-				"execution_count": 282
+				"execution_count": 330
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_boxes = df_locations[df_locations['contents'] == 'O'].copy()\r\n",
+					"df_boxes['GPS'] = df_boxes.index.get_level_values(0) * 100 + df_boxes.index.get_level_values(1)\r\n",
+					"df_boxes['GPS'].sum()"
+				],
+				"execution_count": 331
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_locations.head()\r\n",
+					""
+				],
+				"execution_count": 332
 			}
 		]
 	}
