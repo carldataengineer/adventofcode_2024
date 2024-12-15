@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "8a6a5c1b-8ad3-46be-8ec1-5c23ede7c90f"
+				"spark.autotune.trackingId": "dfaf8c5b-8f2f-4322-a1b1-5317f237310d"
 			}
 		},
 		"metadata": {
@@ -305,7 +305,7 @@
 					"\r\n",
 					"df_robot_behavior_2['cur_x'] = df_robot_behavior_2['px']\r\n",
 					"df_robot_behavior_2['cur_y'] = df_robot_behavior_2['py']\r\n",
-					"df_robot_behavior_2.copy()\r\n",
+					"#df_robot_behavior_2.copy()\r\n",
 					"\r\n",
 					"while ((found_tree == False) & (seconds < (x_tiles * y_tiles))):\r\n",
 					"    seconds += 1\r\n",
