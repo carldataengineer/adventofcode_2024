@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e83e37c0-eddd-47d3-af46-2610364c3efb"
+				"spark.autotune.trackingId": "32ecf3c5-71bd-467b-b776-e17ab43107e4"
 			}
 		},
 		"metadata": {
@@ -172,12 +172,24 @@
 					"        y_m = 0\r\n",
 					"\r\n",
 					"    look_ahead = df_l.loc[(y_r + y_m, x_r + x_m)][0]\r\n",
-					"\r\n",
 					"    print (f\"seeing: {look_ahead}\")\r\n",
 					"\r\n",
+					"    if look_ahead == '#':\r\n",
+					"        # do nothing\r\n",
+					"        return y_r, x_r, df_l\r\n",
+					"    elif look_ahead == '.':\r\n",
+					"        # move\r\n",
+					"        y_r = y_r + y_m\r\n",
+					"        x_r = x_r + x_m\r\n",
+					"\r\n",
+					"        # move rebot reference\r\n",
+					"        df_l.loc[(y_r, x_r)] = '.'\r\n",
+					"    #else:\r\n",
+					"        # evaluate\r\n",
+					"    \r\n",
 					"    return y_r, x_r, df_l"
 				],
-				"execution_count": 54
+				"execution_count": 58
 			},
 			{
 				"cell_type": "code",
@@ -198,7 +210,7 @@
 					"\r\n",
 					"    robot_y, robot_x, df_locations = robot_move(robot_y,robot_x,df_locations,m)"
 				],
-				"execution_count": 55
+				"execution_count": 59
 			},
 			{
 				"cell_type": "code",
