@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "0701d906-ecfc-43bd-b1c3-03dd1957804c"
+				"spark.autotune.trackingId": "e83e37c0-eddd-47d3-af46-2610364c3efb"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 21
+				"execution_count": 29
 			},
 			{
 				"cell_type": "code",
@@ -90,7 +90,7 @@
 					"\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 22
+				"execution_count": 30
 			},
 			{
 				"cell_type": "code",
@@ -107,11 +107,13 @@
 				},
 				"source": [
 					"moves = ''.join(df_input_moves['moves'])\r\n",
-					"df_moves = pd.DataFrame(list(moves), columns=['move'])\r\n",
-					"df_moves.index.name = 'move_id'\r\n",
-					"df_moves.head()"
+					"lst_moves = list(moves)\r\n",
+					"#lst_moves\r\n",
+					"#df_moves = pd.DataFrame(list(moves), columns=['move'])\r\n",
+					"#df_moves.index.name = 'move_id'\r\n",
+					"#df_moves.head()"
 				],
-				"execution_count": 23
+				"execution_count": 31
 			},
 			{
 				"cell_type": "code",
@@ -133,12 +135,88 @@
 					"\r\n",
 					"#find the robot\r\n",
 					"robot_xy = df_locations[df_locations['contents'] == '@']\r\n",
-					"robot_x = robot_xy.index[0][1]\r\n",
 					"robot_y = robot_xy.index[0][0]\r\n",
+					"robot_x = robot_xy.index[0][1]\r\n",
 					"\r\n",
-					"df_locations.head(20)"
+					"df_locations.head(30)"
 				],
-				"execution_count": 26
+				"execution_count": 46
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def robot_move(y_r,x_r,df_l,m_r):\r\n",
+					"    \r\n",
+					"    if m_r == '^':\r\n",
+					"        x_m = 0\r\n",
+					"        y_m = -1\r\n",
+					"    elif m_r == '>':\r\n",
+					"        x_m = 1\r\n",
+					"        y_m = 0\r\n",
+					"    elif m_r == 'v':\r\n",
+					"        x_m = 0\r\n",
+					"        y_m = 1\r\n",
+					"    elif m_r == '<':\r\n",
+					"        x_m = -1\r\n",
+					"        y_m = 0\r\n",
+					"\r\n",
+					"    look_ahead = df_l.loc[(y_r + y_m, x_r + x_m)][0]\r\n",
+					"\r\n",
+					"    print (f\"seeing: {look_ahead}\")\r\n",
+					"\r\n",
+					"    return y_r, x_r, df_l"
+				],
+				"execution_count": 54
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"for m in lst_moves:\r\n",
+					"    print (f\"Robot at ({robot_y}, {robot_x}), moving: {m}\")\r\n",
+					"\r\n",
+					"    robot_y, robot_x, df_locations = robot_move(robot_y,robot_x,df_locations,m)"
+				],
+				"execution_count": 55
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
 			}
 		]
 	}
