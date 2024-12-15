@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "312c5c21-5a3e-4fae-a567-235fb1a4323f"
+				"spark.autotune.trackingId": "f51612bc-c03d-4069-af24-deb1c3a0ac37"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 325
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -69,20 +69,20 @@
 					}
 				},
 				"source": [
-					"x_tiles = 50\r\n",
+					"x_tiles = 10\r\n",
 					"\r\n",
 					"col_specs = []\r\n",
 					"for i in range(x_tiles):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/test2_input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
 					"df_input.columns = range(0, len(df_input.columns))\r\n",
 					"y_tiles = df_input.shape[0]\r\n",
 					"\r\n",
-					"df_input_moves = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/moves.txt\"\\\r\n",
+					"df_input_moves = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/test2_moves.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , names=['moves']\r\n",
@@ -90,7 +90,7 @@
 					"\r\n",
 					"df_input.head(10)"
 				],
-				"execution_count": 326
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -188,7 +188,7 @@
 					"    \r\n",
 					"    return y_r, x_r, df_l"
 				],
-				"execution_count": 327
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -211,7 +211,7 @@
 					"#df_moves.index.name = 'move_id'\r\n",
 					"#df_moves.head()"
 				],
-				"execution_count": 328
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -238,7 +238,7 @@
 					"\r\n",
 					"#df_locations.head(30)"
 				],
-				"execution_count": 329
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -262,7 +262,7 @@
 					"\r\n",
 					"df_locations.unstack()"
 				],
-				"execution_count": 330
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -282,7 +282,7 @@
 					"df_boxes['GPS'] = df_boxes.index.get_level_values(0) * 100 + df_boxes.index.get_level_values(1)\r\n",
 					"df_boxes['GPS'].sum()"
 				],
-				"execution_count": 331
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -298,10 +298,86 @@
 					}
 				},
 				"source": [
-					"df_locations.head()\r\n",
+					"data = [\r\n",
+					"    [\"#\", 0, \"#\"],\r\n",
+					"    [\"#\", 1, \"#\"],\r\n",
+					"    [\"O\", 0, \"[\"],\r\n",
+					"    [\"O\", 1, \"]\"],\r\n",
+					"    [\".\", 0, \".\"],\r\n",
+					"    [\".\", 1, \".\"],\r\n",
+					"    [\"@\", 0, \"@\"],\r\n",
+					"    [\"@\", 1, \".\"]]\r\n",
+					"\r\n",
+					"columns = ['contents', 'offset', 'new_contents']\r\n",
+					"df_map = pd.DataFrame(data, columns=columns)\r\n",
+					"df_map.head()"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# pivot to list of coordinates\r\n",
+					"df_locations = df_input.stack().to_frame().rename_axis(index=('y','x'))\r\n",
+					"df_locations.columns = ['contents']\r\n",
+					"df_locations['y'] = df_locations.index.get_level_values(0)\r\n",
+					"df_locations['x'] = df_locations.index.get_level_values(1)\r\n",
+					"df_locations.head()"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_new_locations = df_locations.merge(df_map, how='left', left_on='contents', right_on='contents')\r\n",
+					"df_new_locations['x'] = df_new_locations['x'] * 2 + df_new_locations['offset']\r\n",
+					"df_new_locations.set_index(['y','x'], inplace=True)\r\n",
+					"df_new_locations = df_new_locations[['new_contents']]\r\n",
+					"df_new_locations.columns = ['contents']\r\n",
+					"\r\n",
+					"df_new_locations.unstack()"
+				],
+				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
 					""
 				],
-				"execution_count": 332
+				"execution_count": null
 			}
 		]
 	}
