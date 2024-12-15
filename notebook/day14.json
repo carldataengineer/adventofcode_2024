@@ -4,20 +4,20 @@
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
-			"referenceName": "carlsmall",
+			"referenceName": "carlbig",
 			"type": "BigDataPoolReference"
 		},
 		"sessionProperties": {
-			"driverMemory": "28g",
-			"driverCores": 4,
-			"executorMemory": "28g",
-			"executorCores": 4,
-			"numExecutors": 2,
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 1,
 			"conf": {
-				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "2",
-				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "dfaf8c5b-8f2f-4322-a1b1-5317f237310d"
+				"spark.dynamicAllocation.enabled": "true",
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "4",
+				"spark.autotune.trackingId": "2ead07e6-e8c9-43b3-97ee-fbb26446b95a"
 			}
 		},
 		"metadata": {
@@ -31,19 +31,19 @@
 				"name": "python"
 			},
 			"a365ComputeOptions": {
-				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
-				"name": "carlsmall",
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlbig",
+				"name": "carlbig",
 				"type": "Spark",
-				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlbig",
 				"auth": {
 					"type": "AAD",
 					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.4",
 				"nodeCount": 10,
-				"cores": 4,
-				"memory": 28,
-				"automaticScaleJobs": false
+				"cores": 8,
+				"memory": 56,
+				"automaticScaleJobs": true
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -56,7 +56,7 @@
 					"import math\r\n",
 					"import re"
 				],
-				"execution_count": 232
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -85,7 +85,7 @@
 					"\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 162
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -110,7 +110,7 @@
 					"\r\n",
 					"    return row"
 				],
-				"execution_count": 163
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -128,7 +128,7 @@
 				"source": [
 					"split_behaviour(df_input.loc[1])['px']"
 				],
-				"execution_count": 164
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -149,7 +149,7 @@
 					"df_robot_behavior_2 = df_robot_behavior.copy()\r\n",
 					"df_robot_behavior.head()"
 				],
-				"execution_count": 165
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -169,7 +169,7 @@
 					"df_robot_behavior['py_100s'] = df_robot_behavior.apply(lambda row: ((int(row.py) + (int(row.vy)*100))%y_tiles)+1, axis=1)\r\n",
 					"df_robot_behavior.head(10)"
 				],
-				"execution_count": 166
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -189,7 +189,7 @@
 					"df_robot_behavior['q_y'] = df_robot_behavior.apply(lambda row: 'B' if row.py_100s>y_mid else 'T' if row.py_100s<y_mid else 'M', axis=1)\r\n",
 					"df_robot_behavior.head(20)"
 				],
-				"execution_count": 167
+				"execution_count": 14
 			},
 			{
 				"cell_type": "code",
@@ -212,7 +212,7 @@
 					"df_results = df_results.loc[filter_set]\r\n",
 					"df_results.head()"
 				],
-				"execution_count": 168
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -235,7 +235,7 @@
 					"    \r\n",
 					"print(result)"
 				],
-				"execution_count": 169
+				"execution_count": 16
 			},
 			{
 				"cell_type": "markdown",
@@ -283,7 +283,7 @@
 					"    df_combinations = pd.merge(df_x, df_y, on='join_key')\r\n",
 					"    return df_combinations[['x', 'y']]"
 				],
-				"execution_count": 170
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -310,8 +310,8 @@
 					"while ((found_tree == False) & (seconds < (x_tiles * y_tiles))):\r\n",
 					"    seconds += 1\r\n",
 					"\r\n",
-					"    df_robot_behavior_2['cur_x'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_x) + int(row.vx))%x_tiles)+1, axis=1)\r\n",
-					"    df_robot_behavior_2['cur_y'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_y) + int(row.vy))%y_tiles)+1, axis=1)\r\n",
+					"    df_robot_behavior_2['cur_x'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_x) + int(row.vx))%x_tiles), axis=1)\r\n",
+					"    df_robot_behavior_2['cur_y'] = df_robot_behavior_2.apply(lambda row: ((int(row.cur_y) + int(row.vy))%y_tiles), axis=1)\r\n",
 					"\r\n",
 					"    # evaluate\r\n",
 					"    #std_x = df_robot_behavior_2['cur_x'].std()\r\n",
@@ -320,6 +320,8 @@
 					"    # size = 40\r\n",
 					"    #tl_cells = df_robot_behavior_2[(df_robot_behavior_2['cur_x'] < size) & (df_robot_behavior_2['cur_y'] < size)].shape[0]\r\n",
 					"    #tr_cells = df_robot_behavior_2[(df_robot_behavior_2['cur_x'] < size) & (df_robot_behavior_2['cur_y'] >= (y_tiles - size))].shape[0]\r\n",
+					"    b_cells = df_robot_behavior_2[(df_robot_behavior_2['cur_y'] > 80)].shape[0]\r\n",
+					"    results += [[seconds, b_cells]]\r\n",
 					"\r\n",
 					"    #min_x = df_robot_behavior_2['cur_x'].min()\r\n",
 					"    #max_x = df_robot_behavior_2['cur_x'].max()\r\n",
@@ -327,14 +329,14 @@
 					"    #max_y = df_robot_behavior_2['cur_y'].max()\r\n",
 					"    #results += [[seconds, std_x, std_y, tl_cells, tr_cells, min_x, max_x, min_y, max_y]]\r\n",
 					"\r\n",
-					"    cur_x_var = np.var(df_robot_behavior_2['cur_x'])\r\n",
-					"    cur_y_var = np.var(df_robot_behavior_2['cur_y'])\r\n",
-					"    results += [[cur_x_var, cur_y_var]]\r\n",
+					"    # cur_x_var = np.var(df_robot_behavior_2['cur_x'])\r\n",
+					"    # cur_y_var = np.var(df_robot_behavior_2['cur_y'])\r\n",
+					"    # results += [[seconds, cur_x_var, cur_y_var]]\r\n",
 					"\r\n",
 					"print (F\"Elapsed {seconds} seconds\")\r\n",
 					""
 				],
-				"execution_count": 236
+				"execution_count": 19
 			},
 			{
 				"cell_type": "code",
@@ -351,11 +353,31 @@
 				},
 				"source": [
 					"df_results = pd.DataFrame(results)\r\n",
-					"df_results.columns = ['cur_x_var', 'cur_y_var']\r\n",
+					"df_results.columns = ['seconds', 'b_cells']\r\n",
+					"df_results.sort_values('b_cells', ascending=True).head(20)"
+				],
+				"execution_count": 21
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_results = pd.DataFrame(results)\r\n",
+					"df_results.columns = ['seconds', 'cur_x_var', 'cur_y_var']\r\n",
 					"df_results['total_var'] = df_results['cur_x_var'] + df_results['cur_y_var']\r\n",
 					"df_results.sort_values('total_var', ascending=False).head(20)"
 				],
-				"execution_count": 240
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -379,7 +401,7 @@
 					"df_results['corner_cells'] = df_results['tl_cells'] + df_results['tr_cells']\r\n",
 					"df_results.sort_values('corner_cells', ascending=True).head(20)"
 				],
-				"execution_count": 231
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -395,7 +417,27 @@
 					}
 				},
 				"source": [
-					"df_robot_locations = df_robot_behavior_2.groupby(['cur_y','cur_x'])['behaviour'].count().to_frame()\r\n",
+					"df_robot_behavior_2['px_trees'] = df_robot_behavior_2.apply(lambda row: ((int(row.px) + (int(row.vx)*133))%x_tiles)+1, axis=1)\r\n",
+					"df_robot_behavior_2['py_trees'] = df_robot_behavior_2.apply(lambda row: ((int(row.py) + (int(row.vy)*133))%y_tiles)+1, axis=1)\r\n",
+					"df_robot_behavior_2.head(10)"
+				],
+				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_robot_locations = df_robot_behavior_2.groupby(['py_trees','px_trees'])['behaviour'].count().to_frame()\r\n",
 					"df_robot_locations.index.names = ['y','x']\r\n",
 					"df_robot_locations.columns = ['robot_count']\r\n",
 					"#df_robot_locations.head()\r\n",
@@ -407,7 +449,7 @@
 					"df_positions = df_grid.merge(df_robot_locations, how='left', left_index=True, right_index=True)\r\n",
 					"df_positions.unstack().iloc[0:50, 41:61] "
 				],
-				"execution_count": 172
+				"execution_count": 25
 			},
 			{
 				"cell_type": "code",
@@ -431,7 +473,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 177
+				"execution_count": null
 			}
 		]
 	}
