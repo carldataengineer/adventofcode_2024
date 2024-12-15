@@ -1,0 +1,145 @@
+{
+	"name": "day15",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "0701d906-ecfc-43bd-b1c3-03dd1957804c"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 21
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"x_tiles = 8\r\n",
+					"\r\n",
+					"col_specs = []\r\n",
+					"for i in range(x_tiles):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/test_input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"y_tiles = df_input.shape[0]\r\n",
+					"\r\n",
+					"df_input_moves = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day15/test_moves.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , names=['moves']\r\n",
+					"                    , colspecs=[[0,1000]])\r\n",
+					"\r\n",
+					"df_input.head(10)"
+				],
+				"execution_count": 22
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"moves = ''.join(df_input_moves['moves'])\r\n",
+					"df_moves = pd.DataFrame(list(moves), columns=['move'])\r\n",
+					"df_moves.index.name = 'move_id'\r\n",
+					"df_moves.head()"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# pivot to list of coordinates\r\n",
+					"df_locations = df_input.stack().to_frame().rename_axis(index=('y','x'))\r\n",
+					"df_locations.columns = ['contents']\r\n",
+					"\r\n",
+					"#find the robot\r\n",
+					"robot_xy = df_locations[df_locations['contents'] == '@']\r\n",
+					"robot_x = robot_xy.index[0][1]\r\n",
+					"robot_y = robot_xy.index[0][0]\r\n",
+					"\r\n",
+					"df_locations.head(20)"
+				],
+				"execution_count": 26
+			}
+		]
+	}
+}
