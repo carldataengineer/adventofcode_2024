@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c15b1f19-d6d9-44d3-b876-af3fbe229b62"
+				"spark.autotune.trackingId": "02d3918e-038d-4407-a9ce-c8f7c6007954"
 			}
 		},
 		"metadata": {
@@ -156,6 +156,9 @@
 					"    if look_up== '.':\r\n",
 					"        moves_list += [[y-1,x]]\r\n",
 					"        score_up, moves_list = move_reindeer(r_y-1, r_x, '^', score_up, moves_list)\r\n",
+					"    elif look_up== 'e'\r\n",
+					"        score_up + 1\r\n",
+					"        moves_list += [[y-1,x]]\r\n",
 					"\r\n",
 					"    look_right = df_locations.loc[(r_y, r_x+1)][0]\r\n",
 					"    if look_right == '.':\r\n",
