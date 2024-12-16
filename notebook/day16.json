@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e5b47c60-aaf4-41c2-9c87-25813d766187"
+				"spark.autotune.trackingId": "fb6725b7-455a-4b3b-be27-ea35dec179c0"
 			}
 		},
 		"metadata": {
@@ -129,27 +129,45 @@
 					}
 				},
 				"source": [
-					"def move_reindeer(r_x, r_y, r_d):\r\n",
+					"def move_reindeer(r_y, r_x, r_d, score, moves_list):\r\n",
 					"\r\n",
 					"    if r_d == '^':\r\n",
-					"        x_m = 0\r\n",
-					"        y_m = -1\r\n",
+					"        score_up = score\r\n",
+					"        score_right = score + 1000\r\n",
+					"        score_down = score + 2000\r\n",
+					"        score_left = score + 1000\r\n",
 					"    elif r_d == '>':\r\n",
-					"        x_m = 1\r\n",
-					"        y_m = 0\r\n",
+					"        score_up = score + 1000\r\n",
+					"        score_right = score\r\n",
+					"        score_down = score + 1000\r\n",
+					"        score_left = score + 2000\r\n",
 					"    elif r_d == 'v':\r\n",
-					"        x_m = 0\r\n",
-					"        y_m = 1\r\n",
+					"        score_up = score + 2000\r\n",
+					"        score_right = score + 1000\r\n",
+					"        score_down = score\r\n",
+					"        score_left = score + 1000\r\n",
 					"    elif r_d == '<':\r\n",
-					"        x_m = -1\r\n",
-					"        y_m = 0\r\n",
+					"        score_up = score + 1000\r\n",
+					"        score_right = score + 2000\r\n",
+					"        score_down = score + 1000\r\n",
+					"        score_left = score\r\n",
 					"\r\n",
-					"    look_up = df_locations.loc[(r_y + -1, r_x + 0)][0]\r\n",
-					"    look_right = df_locations.loc[(r_y + 0, r_x + 1)][0]\r\n",
-					"    look_down = df_locations.loc[(r_y + 1, r_x + 0)][0]\r\n",
-					"    look_left = df_locations.loc[(r_y + 0, r_x + -1)][0]\r\n",
+					"    if df_locations.loc[(r_y + -1, r_x + 0)][0] == '.':\r\n",
+					"        score_up = move_reindeer(r_y + -1, r_x + 0, '^', score_up)\r\n",
 					"\r\n",
-					"    print(f\"I see up({look_up}), right({look_right}), down{look_down}, left{look_left}\")"
+					"    if df_locations.loc[(r_y + 0, r_x + 1)][0] == '.':\r\n",
+					"        score_right = move_reindeer(r_y + 0, r_x + 1, '>', score_right)\r\n",
+					"\r\n",
+					"    if df_locations.loc[(r_y + 1, r_x + 0)][0] == '.':\r\n",
+					"        score_down = move_reindeer(r_y + 1, r_x + 0, 'v', score_down)\r\n",
+					"    \r\n",
+					"    if df_locations.loc[(r_y + 0, r_x + -1)][0] == '.':\r\n",
+					"        score_left = move_reindeer(r_y + 0, r_x + -1, '<', score_left)\r\n",
+					"\r\n",
+					"\r\n",
+					"    print(f\"I see up({look_up}), right({look_right}), down{look_down}, left{look_left}\")\r\n",
+					"\r\n",
+					"    return min(score_left"
 				],
 				"execution_count": 13
 			},
@@ -167,7 +185,7 @@
 					}
 				},
 				"source": [
-					"move_reindeer(reindeer_x, reindeer_y, reindeer_y)"
+					"score, reindeer_moves = move_reindeer(reindeer_x, reindeer_y, reindeer_y, 0, [])"
 				],
 				"execution_count": 14
 			},
