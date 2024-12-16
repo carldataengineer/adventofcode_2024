@@ -1,0 +1,194 @@
+{
+	"name": "day16",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "e5b47c60-aaf4-41c2-9c87-25813d766187"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"x_tiles = 15\r\n",
+					"\r\n",
+					"col_specs = []\r\n",
+					"for i in range(x_tiles):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day16/test_input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"\r\n",
+					"y_tiles = df_input.shape[0]\r\n",
+					"df_input.head(15)"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# pivot to list of coordinates\r\n",
+					"df_locations = df_input.stack().to_frame().rename_axis(index=('y','x'))\r\n",
+					"df_locations.columns = ['contents']\r\n",
+					"\r\n",
+					"#find the reindeer\r\n",
+					"reindeer_xy = df_locations[df_locations['contents'] == 'S']\r\n",
+					"reindeer_y = reindeer_xy.index[0][0]\r\n",
+					"reindeer_x = reindeer_xy.index[0][1]\r\n",
+					"reindeer_y = '>'\r\n",
+					"print(f\" Reindeer_x at ({reindeer_y},{reindeer_x})\")\r\n",
+					"\r\n",
+					"#df_locations.head(30)"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def move_reindeer(r_x, r_y, r_d):\r\n",
+					"\r\n",
+					"    if r_d == '^':\r\n",
+					"        x_m = 0\r\n",
+					"        y_m = -1\r\n",
+					"    elif r_d == '>':\r\n",
+					"        x_m = 1\r\n",
+					"        y_m = 0\r\n",
+					"    elif r_d == 'v':\r\n",
+					"        x_m = 0\r\n",
+					"        y_m = 1\r\n",
+					"    elif r_d == '<':\r\n",
+					"        x_m = -1\r\n",
+					"        y_m = 0\r\n",
+					"\r\n",
+					"    look_up = df_locations.loc[(r_y + -1, r_x + 0)][0]\r\n",
+					"    look_right = df_locations.loc[(r_y + 0, r_x + 1)][0]\r\n",
+					"    look_down = df_locations.loc[(r_y + 1, r_x + 0)][0]\r\n",
+					"    look_left = df_locations.loc[(r_y + 0, r_x + -1)][0]\r\n",
+					"\r\n",
+					"    print(f\"I see up({look_up}), right({look_right}), down{look_down}, left{look_left}\")"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"move_reindeer(reindeer_x, reindeer_y, reindeer_y)"
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
