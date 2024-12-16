@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "74500391-e40b-40f9-8b6b-844c9c8ad903"
+				"spark.autotune.trackingId": "ba79f1e1-32f2-4caf-bd96-69db8d85ace4"
 			}
 		},
 		"metadata": {
@@ -69,13 +69,13 @@
 					}
 				},
 				"source": [
-					"x_tiles = 15\r\n",
+					"x_tiles = 17\r\n",
 					"\r\n",
 					"col_specs = []\r\n",
 					"for i in range(x_tiles):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day16/test_input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day16/test2_input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -84,7 +84,7 @@
 					"y_tiles = df_input.shape[0]\r\n",
 					"df_input.head(15)"
 				],
-				"execution_count": 95
+				"execution_count": 145
 			},
 			{
 				"cell_type": "code",
@@ -113,7 +113,7 @@
 					"\r\n",
 					"#df_locations.head(30)"
 				],
-				"execution_count": 96
+				"execution_count": 146
 			},
 			{
 				"cell_type": "code",
@@ -133,25 +133,21 @@
 					"\r\n",
 					"    #print (f\"Reindeer at ({r_y},{r_x}) looking {r_d}, current score {score} after {moves_count} moves\")\r\n",
 					"\r\n",
-					"    if moves_count < 40:\r\n",
+					"    if moves_count < 100:\r\n",
 					"        if r_d == '^':\r\n",
 					"            score_up = score\r\n",
 					"            score_right = score + 1000\r\n",
-					"            score_down = score + 2000\r\n",
 					"            score_left = score + 1000\r\n",
 					"        elif r_d == '>':\r\n",
 					"            score_up = score + 1000\r\n",
 					"            score_right = score\r\n",
 					"            score_down = score + 1000\r\n",
-					"            score_left = score + 2000\r\n",
 					"        elif r_d == 'v':\r\n",
-					"            score_up = score + 2000\r\n",
 					"            score_right = score + 1000\r\n",
 					"            score_down = score\r\n",
 					"            score_left = score + 1000\r\n",
 					"        elif r_d == '<':\r\n",
 					"            score_up = score + 1000\r\n",
-					"            score_right = score + 2000\r\n",
 					"            score_down = score + 1000\r\n",
 					"            score_left = score\r\n",
 					"\r\n",
@@ -168,7 +164,7 @@
 					"            elif look_up== 'E':\r\n",
 					"                score_up += 1\r\n",
 					"                moves_cnt_up += 1\r\n",
-					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
+					"                print (f\"Reindeer at ({r_y-1},{r_x}) score {score} after {moves_count} moves\")\r\n",
 					"            else:\r\n",
 					"                score_up = 999999999\r\n",
 					"        else:\r\n",
@@ -191,7 +187,7 @@
 					"            elif look_right== 'E':\r\n",
 					"                score_right += 1\r\n",
 					"                moves_cnt_right += 1\r\n",
-					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
+					"                print (f\"Reindeer at ({r_y},{r_x+1}) score {score} after {moves_count} moves\")\r\n",
 					"            else:\r\n",
 					"                score_right = 999999999\r\n",
 					"        else:\r\n",
@@ -215,7 +211,7 @@
 					"            elif look_down== 'E':\r\n",
 					"                score_down += 1\r\n",
 					"                moves_cnt_down += 1\r\n",
-					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
+					"                print (f\"Reindeer at ({r_y+1},{r_x}) score {score} after {moves_count} moves\")\r\n",
 					"            else:\r\n",
 					"                score_down = 999999999\r\n",
 					"        else:\r\n",
@@ -239,7 +235,7 @@
 					"            elif look_left== 'E':\r\n",
 					"                score_left += 1\r\n",
 					"                moves_cnt_left += 1\r\n",
-					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
+					"                print (f\"Reindeer at ({r_y},{r_x-1}) score {score} after {moves_count} moves\")\r\n",
 					"            else:\r\n",
 					"                score_left = 999999999\r\n",
 					"        else:\r\n",
@@ -254,7 +250,7 @@
 					"    else:\r\n",
 					"        return score, moves_list, moves_count"
 				],
-				"execution_count": 141
+				"execution_count": 153
 			},
 			{
 				"cell_type": "code",
@@ -272,7 +268,7 @@
 				"source": [
 					"score, reindeer_moves, reindeer_moves_count = move_reindeer(reindeer_y, reindeer_x, reindeer_d, 0, [], 0)"
 				],
-				"execution_count": 142
+				"execution_count": 154
 			},
 			{
 				"cell_type": "code",
@@ -291,7 +287,7 @@
 					"print (f\"Best score is {score} after {reindeer_moves_count} moves\")\r\n",
 					"reindeer_moves"
 				],
-				"execution_count": 143
+				"execution_count": 156
 			},
 			{
 				"cell_type": "code",
