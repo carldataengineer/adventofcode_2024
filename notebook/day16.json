@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f32b33d9-8fe9-41c1-8f82-5f70bc20feb3"
+				"spark.autotune.trackingId": "ed55430c-0236-46af-9c23-a6cfc3645815"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 17
+				"execution_count": 94
 			},
 			{
 				"cell_type": "code",
@@ -84,7 +84,7 @@
 					"y_tiles = df_input.shape[0]\r\n",
 					"df_input.head(15)"
 				],
-				"execution_count": 18
+				"execution_count": 95
 			},
 			{
 				"cell_type": "code",
@@ -113,7 +113,7 @@
 					"\r\n",
 					"#df_locations.head(30)"
 				],
-				"execution_count": 32
+				"execution_count": 96
 			},
 			{
 				"cell_type": "code",
@@ -133,7 +133,7 @@
 					"\r\n",
 					"    #print (f\"Reindeer at ({r_y},{r_x}) looking {r_d}, current score {score} after {moves_count} moves\")\r\n",
 					"\r\n",
-					"    if moves_count < 999:\r\n",
+					"    if moves_count < 40:\r\n",
 					"        if r_d == '^':\r\n",
 					"            score_up = score\r\n",
 					"            score_right = score + 1000\r\n",
@@ -159,14 +159,15 @@
 					"            look_up = df_locations.loc[(r_y-1, r_x)][0]\r\n",
 					"            #print(f\"   looking up {look_up}\")\r\n",
 					"            if look_up== '.':\r\n",
+					"                score_up += 1\r\n",
 					"                moves_up = moves_list + [[r_y-1, r_x]]\r\n",
 					"                moves_count += 1\r\n",
 					"                score_up, moves_up, moves_cnt_up = move_reindeer(r_y-1, r_x, '^', score_up, moves_up, moves_count)\r\n",
-					"            elif look_up== 'e':\r\n",
+					"            elif look_up== 'E':\r\n",
 					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
 					"                score_up += 1\r\n",
 					"                moves_up = moves_list\r\n",
-					"                moves_cnt_up += 1\r\n",
+					"                moves_cnt_up = moves_count\r\n",
 					"            else:\r\n",
 					"                score_up = 999999999\r\n",
 					"                moves_up = moves_list\r\n",
@@ -184,14 +185,15 @@
 					"            look_right = df_locations.loc[(r_y, r_x+1)][0]\r\n",
 					"            #print(f\"   looking right {look_right}\")\r\n",
 					"            if look_right == '.':\r\n",
+					"                score_right += 1\r\n",
 					"                moves_right = moves_list + [[r_y, r_x+1]]\r\n",
 					"                moves_count += 1\r\n",
 					"                score_right, moves_right, moves_cnt_right = move_reindeer(r_y, r_x+1, '>', score_right, moves_right, moves_count)\r\n",
-					"            elif look_right== 'e':\r\n",
+					"            elif look_right== 'E':\r\n",
 					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
 					"                score_right += 1\r\n",
 					"                moves_right = moves_list\r\n",
-					"                moves_cnt_right += 1\r\n",
+					"                moves_cnt_right = moves_count\r\n",
 					"            else:\r\n",
 					"                score_right = 999999999\r\n",
 					"                moves_right = moves_list\r\n",
@@ -210,14 +212,15 @@
 					"            look_down = df_locations.loc[(r_y+1, r_x)][0]\r\n",
 					"            #print(f\"   looking down {look_down}\")\r\n",
 					"            if look_down == '.':\r\n",
+					"                score_down += 1\r\n",
 					"                moves_down = moves_list + [[r_y+1, r_x]]\r\n",
 					"                moves_count += 1\r\n",
 					"                score_down, moves_down, moves_cnt_down = move_reindeer(r_y+1, r_x, 'v', score_down, moves_down, moves_count)\r\n",
-					"            elif look_down== 'e':\r\n",
+					"            elif look_down== 'E':\r\n",
 					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
 					"                score_down += 1\r\n",
 					"                moves_down = moves_list\r\n",
-					"                moves_cnt_down += 1\r\n",
+					"                moves_cnt_down = moves_count\r\n",
 					"            else:\r\n",
 					"                score_down = 999999999\r\n",
 					"                moves_down = moves_list\r\n",
@@ -236,14 +239,15 @@
 					"            look_left = df_locations.loc[(r_y, r_x-1)][0]\r\n",
 					"            #print(f\"   looking left {look_left}\")\r\n",
 					"            if look_left == '.':\r\n",
+					"                score_left += 1\r\n",
 					"                moves_left = moves_list + [[r_y, r_x-1]]\r\n",
 					"                moves_count += 1\r\n",
 					"                score_left, moves_left, moves_cnt_left = move_reindeer(r_y, r_x-1, '<', score_left, moves_left, moves_count)\r\n",
-					"            elif look_left== 'e':\r\n",
+					"            elif look_left== 'E':\r\n",
 					"                print (f\"Reindeer at ({r_y},{r_x}) score {score} after {moves_count} moves\")\r\n",
 					"                score_left += 1\r\n",
 					"                moves_left = moves_list\r\n",
-					"                moves_cnt_left += 1\r\n",
+					"                moves_cnt_left = moves_count\r\n",
 					"            else:\r\n",
 					"                score_left = 999999999\r\n",
 					"                moves_left = moves_list\r\n",
@@ -262,7 +266,7 @@
 					"    else:\r\n",
 					"        return score, moves_list, moves_count"
 				],
-				"execution_count": 84
+				"execution_count": 122
 			},
 			{
 				"cell_type": "code",
@@ -280,7 +284,7 @@
 				"source": [
 					"score, reindeer_moves, reindeer_moves_count = move_reindeer(reindeer_y, reindeer_x, reindeer_d, 0, [], 0)"
 				],
-				"execution_count": 85
+				"execution_count": 123
 			},
 			{
 				"cell_type": "code",
@@ -296,10 +300,10 @@
 					}
 				},
 				"source": [
-					"print (f\"Best score is {reindeer_moves_count} after {reindeer_moves_count} moves\")\r\n",
+					"print (f\"Best score is {score} after {reindeer_moves_count} moves\")\r\n",
 					"reindeer_moves"
 				],
-				"execution_count": 86
+				"execution_count": 124
 			},
 			{
 				"cell_type": "code",
