@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "03776ab7-c7f7-497b-be48-65d48b102595"
+				"spark.autotune.trackingId": "870cd3e0-359c-4586-ab3c-3f62e093a40c"
 			}
 		},
 		"metadata": {
@@ -64,7 +64,7 @@
 				"source": [
 					"import math"
 				],
-				"execution_count": 114
+				"execution_count": 131
 			},
 			{
 				"cell_type": "code",
@@ -80,7 +80,7 @@
 					}
 				},
 				"source": [
-					"def get_operand(operand, is_combo):\r\n",
+					"def get_operand(operand, is_combo, ra, rb, rc):\r\n",
 					"\r\n",
 					"    o = -1\r\n",
 					"    if is_combo==False:\r\n",
@@ -88,11 +88,11 @@
 					"    elif operand in range(4):\r\n",
 					"        o = operand\r\n",
 					"    elif operand == 4:\r\n",
-					"        o = register_a\r\n",
+					"        o = ra\r\n",
 					"    elif operand == 5:\r\n",
-					"        o = register_b\r\n",
+					"        o = rb\r\n",
 					"    elif operand == 6:\r\n",
-					"        o = register_c\r\n",
+					"        o = rc\r\n",
 					"    elif operand == 7:\r\n",
 					"        print(\"error\")\r\n",
 					"    else:\r\n",
@@ -100,7 +100,7 @@
 					"\r\n",
 					"    return o"
 				],
-				"execution_count": 115
+				"execution_count": 132
 			},
 			{
 				"cell_type": "code",
@@ -112,7 +112,7 @@
 					"program = '0,1,5,4,3,0'\r\n",
 					"program_list = program.split(',')"
 				],
-				"execution_count": 116
+				"execution_count": 133
 			},
 			{
 				"cell_type": "code",
@@ -133,19 +133,19 @@
 					"    out = -1\r\n",
 					"\r\n",
 					"    if opcode == 0:\r\n",
-					"        o = get_operand(operand, is_combo=True)\r\n",
+					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        ra = math.floor( ra / pow(2, o) )\r\n",
 					"        print(f\"adv: divide {ra} by 2 ^ {o}, register_a = {ra}\")\r\n",
 					"    elif opcode == 1:\r\n",
-					"        o = get_operand(operand, is_combo=False)\r\n",
+					"        o = get_operand(operand, False, ra, rb, rc)\r\n",
 					"        rb = rb ^ o\r\n",
 					"        print(f\"bxl: bitwise {rb} XOR {o}, register_b = {rb}\")\r\n",
 					"    elif opcode == 2:\r\n",
-					"        o = get_operand(operand, is_combo=True)\r\n",
+					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        rb = o % 8\r\n",
 					"        print(f\"bst: {o} modulo 8, register_b = {rb}\")\r\n",
 					"    elif opcode == 3:\r\n",
-					"        o = get_operand(operand, is_combo=False)\r\n",
+					"        o = get_operand(operand, False, ra, rb, rc)\r\n",
 					"        if ra != 0:\r\n",
 					"            print(f\"jnz: jump to {o} \")\r\n",
 					"            ip = o\r\n",
@@ -153,26 +153,26 @@
 					"        else:\r\n",
 					"            print(f\"jnz: no jump \")\r\n",
 					"    elif opcode == 4:\r\n",
-					"        o = get_operand(operand, is_combo=False)\r\n",
+					"        o = get_operand(operand, False, ra, rb, rc)\r\n",
 					"        rb = rb ^ rc\r\n",
 					"        print(f\"bxc: bitwise {rb} XOR {rc}, register_b = {rb}\")\r\n",
 					"    elif opcode == 5:\r\n",
-					"        o = get_operand(operand, is_combo=True)\r\n",
+					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        out = o % 8\r\n",
 					"        print(f\"out: {o} modulo 8, output = {out}\")\r\n",
 					"    elif opcode == 6:\r\n",
-					"        o = get_operand(operand, is_combo=True)\r\n",
+					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        rb = math.floor( ra / pow(2, o) )\r\n",
 					"        print(f\"bdv: divide {ra} by 2 ^ {o}, register_b = {rb}\")\r\n",
 					"    elif opcode == 7:\r\n",
-					"        o = get_operand(operand, is_combo=True)\r\n",
+					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        rc = math.floor( ra / pow(2, o) )\r\n",
 					"        print(f\"cdv: divide {ra} by 2 ^ {o}, register_c = {rc}\")\r\n",
 					"\r\n",
 					"    return out, ra, rb, rc, aj\r\n",
 					""
 				],
-				"execution_count": 117
+				"execution_count": 134
 			},
 			{
 				"cell_type": "code",
@@ -195,34 +195,7 @@
 					"program = '5,0,5,1,5,4'\r\n",
 					"program_list = program.split(',')"
 				],
-				"execution_count": 119
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"register_b = 10\r\n",
-					"register_b = 1\r\n",
-					"register_c = 9\r\n",
-					"opcode = 2\r\n",
-					"operand = 6\r\n",
-					"instruction_pointer = 0\r\n",
-					"auto_jump = True\r\n",
-					"output, register_a, register_b, register_c, auto_jump = perform_instruction(5, 4, 0, True, register_a, register_b, register_c)\r\n",
-					"\r\n",
-					"print (f\"output: {output}, register_a: {register_a}, register_b: {register_b}, register_c: {register_c}, auto_jump {str(auto_jump)}\")"
-				],
-				"execution_count": 118
+				"execution_count": 135
 			},
 			{
 				"cell_type": "code",
@@ -263,7 +236,34 @@
 					"\r\n",
 					"print (output_list)"
 				],
-				"execution_count": 121
+				"execution_count": 136
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"register_b = 10\r\n",
+					"register_b = 0\r\n",
+					"register_c = 0\r\n",
+					"opcode = 5\r\n",
+					"operand = 0\r\n",
+					"instruction_pointer = 0\r\n",
+					"auto_jump = True\r\n",
+					"output, register_a, register_b, register_c, auto_jump = perform_instruction(5, 0, 0, True, register_a, register_b, register_c)\r\n",
+					"\r\n",
+					"print (f\"output: {output}, register_a: {register_a}, register_b: {register_b}, register_c: {register_c}, auto_jump {str(auto_jump)}\")"
+				],
+				"execution_count": 139
 			},
 			{
 				"cell_type": "code",
