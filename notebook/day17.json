@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "870cd3e0-359c-4586-ab3c-3f62e093a40c"
+				"spark.autotune.trackingId": "80392140-2424-4db5-b713-1179c32a1db3"
 			}
 		},
 		"metadata": {
@@ -64,7 +64,7 @@
 				"source": [
 					"import math"
 				],
-				"execution_count": 131
+				"execution_count": 198
 			},
 			{
 				"cell_type": "code",
@@ -98,21 +98,9 @@
 					"    else:\r\n",
 					"        print(\"out of range error\")\r\n",
 					"\r\n",
-					"    return o"
+					"    return int(o)"
 				],
-				"execution_count": 132
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"register_a = 729\r\n",
-					"register_b = 0\r\n",
-					"register_c = 0\r\n",
-					"\r\n",
-					"program = '0,1,5,4,3,0'\r\n",
-					"program_list = program.split(',')"
-				],
-				"execution_count": 133
+				"execution_count": 199
 			},
 			{
 				"cell_type": "code",
@@ -130,49 +118,66 @@
 				"source": [
 					"def perform_instruction(opcode, operand, ip, aj, ra, rb, rc):\r\n",
 					"\r\n",
+					"    #print (f\"opcode {opcode}\")\r\n",
 					"    out = -1\r\n",
 					"\r\n",
 					"    if opcode == 0:\r\n",
 					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
+					"        ra_pre = ra\r\n",
 					"        ra = math.floor( ra / pow(2, o) )\r\n",
-					"        print(f\"adv: divide {ra} by 2 ^ {o}, register_a = {ra}\")\r\n",
+					"        #print(f\"adv: divide {ra_pre} by 2 ^ {o}, register_a = {ra}\")\r\n",
 					"    elif opcode == 1:\r\n",
 					"        o = get_operand(operand, False, ra, rb, rc)\r\n",
+					"        rb_pre = rb\r\n",
 					"        rb = rb ^ o\r\n",
-					"        print(f\"bxl: bitwise {rb} XOR {o}, register_b = {rb}\")\r\n",
+					"        #print(f\"bxl: bitwise {rb_pre} XOR {o}, register_b = {rb}\")\r\n",
 					"    elif opcode == 2:\r\n",
 					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        rb = o % 8\r\n",
-					"        print(f\"bst: {o} modulo 8, register_b = {rb}\")\r\n",
+					"        #print(f\"bst: {o} modulo 8, register_b = {rb}\")\r\n",
 					"    elif opcode == 3:\r\n",
 					"        o = get_operand(operand, False, ra, rb, rc)\r\n",
 					"        if ra != 0:\r\n",
-					"            print(f\"jnz: jump to {o} \")\r\n",
+					"            #print(f\"jnz: jump to {o} \")\r\n",
 					"            ip = o\r\n",
 					"            aj = False\r\n",
-					"        else:\r\n",
-					"            print(f\"jnz: no jump \")\r\n",
+					"        #else:\r\n",
+					"            #print(f\"jnz: no jump \")\r\n",
 					"    elif opcode == 4:\r\n",
 					"        o = get_operand(operand, False, ra, rb, rc)\r\n",
+					"        rb_pre = rb\r\n",
 					"        rb = rb ^ rc\r\n",
-					"        print(f\"bxc: bitwise {rb} XOR {rc}, register_b = {rb}\")\r\n",
+					"        #print(f\"bxc: bitwise {rb_pre} XOR {rc}, register_b = {rb}\")\r\n",
 					"    elif opcode == 5:\r\n",
 					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        out = o % 8\r\n",
-					"        print(f\"out: {o} modulo 8, output = {out}\")\r\n",
+					"        #print(f\"out: {o} modulo 8, output = {out}\")\r\n",
 					"    elif opcode == 6:\r\n",
 					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        rb = math.floor( ra / pow(2, o) )\r\n",
-					"        print(f\"bdv: divide {ra} by 2 ^ {o}, register_b = {rb}\")\r\n",
+					"        #print(f\"bdv: divide {ra} by 2 ^ {o}, register_b = {rb}\")\r\n",
 					"    elif opcode == 7:\r\n",
 					"        o = get_operand(operand, True, ra, rb, rc)\r\n",
 					"        rc = math.floor( ra / pow(2, o) )\r\n",
-					"        print(f\"cdv: divide {ra} by 2 ^ {o}, register_c = {rc}\")\r\n",
+					"        #print(f\"cdv: divide {ra} by 2 ^ {o}, register_c = {rc}\")\r\n",
 					"\r\n",
-					"    return out, ra, rb, rc, aj\r\n",
+					"    return out, ip, ra, rb, rc, aj\r\n",
 					""
 				],
-				"execution_count": 134
+				"execution_count": 200
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# part A test\r\n",
+					"register_a = 729\r\n",
+					"register_b = 0\r\n",
+					"register_c = 0\r\n",
+					"\r\n",
+					"program = '0,1,5,4,3,0'\r\n",
+					"program_list = program.split(',')"
+				],
+				"execution_count": 202
 			},
 			{
 				"cell_type": "code",
@@ -188,14 +193,15 @@
 					}
 				},
 				"source": [
-					"register_a = 10\r\n",
+					"# part A\r\n",
+					"register_a = 30878003\r\n",
 					"register_b = 0\r\n",
 					"register_c = 0\r\n",
 					"\r\n",
-					"program = '5,0,5,1,5,4'\r\n",
+					"program = '2,4,1,2,7,5,0,3,4,7,1,7,5,5,3,0'\r\n",
 					"program_list = program.split(',')"
 				],
-				"execution_count": 135
+				"execution_count": 213
 			},
 			{
 				"cell_type": "code",
@@ -213,18 +219,19 @@
 				"source": [
 					"instruction_pointer = 0\r\n",
 					"instruction_available = True\r\n",
-					"auto_jump = True\r\n",
 					"output_list = []\r\n",
+					"i = 0\r\n",
 					"\r\n",
-					"while instruction_available == True:\r\n",
+					"while (instruction_available == True) & (i < 1000):\r\n",
 					"\r\n",
-					"    opcode = program_list[instruction_pointer]\r\n",
-					"    operand = program_list[instruction_pointer + 1]\r\n",
-					"    print(f\"opcode_pointer: {instruction_pointer}, opcode: {opcode}, operand: {operand}\")\r\n",
+					"    opcode = int(program_list[instruction_pointer])\r\n",
+					"    operand = int(program_list[instruction_pointer + 1])\r\n",
+					"    auto_jump = True\r\n",
+					"    #print(f\"opcode: {opcode}, operand: {operand}, instruction_pointer: {instruction_pointer}\")\r\n",
 					"\r\n",
-					"    output, register_a, register_b, register_c, auto_jump = perform_instruction(opcode, operand, instruction_pointer, auto_jump, register_a, register_b, register_c)\r\n",
+					"    output, instruction_pointer, register_a, register_b, register_c, auto_jump = perform_instruction(opcode, operand, instruction_pointer, auto_jump, register_a, register_b, register_c)\r\n",
 					"\r\n",
-					"    if output > 0:\r\n",
+					"    if output >= 0:\r\n",
 					"        output_list += [output]\r\n",
 					"\r\n",
 					"    # iteration management\r\n",
@@ -234,36 +241,12 @@
 					"    if instruction_pointer >= len(program_list):\r\n",
 					"        instruction_available = False\r\n",
 					"\r\n",
-					"print (output_list)"
-				],
-				"execution_count": 136
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"register_b = 10\r\n",
-					"register_b = 0\r\n",
-					"register_c = 0\r\n",
-					"opcode = 5\r\n",
-					"operand = 0\r\n",
-					"instruction_pointer = 0\r\n",
-					"auto_jump = True\r\n",
-					"output, register_a, register_b, register_c, auto_jump = perform_instruction(5, 0, 0, True, register_a, register_b, register_c)\r\n",
+					"    i += 1\r\n",
 					"\r\n",
-					"print (f\"output: {output}, register_a: {register_a}, register_b: {register_b}, register_c: {register_c}, auto_jump {str(auto_jump)}\")"
+					"final_output = ','.join([str(o) for o in output_list])\r\n",
+					"print (final_output)"
 				],
-				"execution_count": 139
+				"execution_count": 217
 			},
 			{
 				"cell_type": "code",
@@ -279,9 +262,89 @@
 					}
 				},
 				"source": [
+					"def run_program(register_a, program):\r\n",
+					"    register_b = 0\r\n",
+					"    register_c = 0\r\n",
+					"    program_list = program.split(',')\r\n",
+					"    instruction_pointer = 0\r\n",
+					"    instruction_available = True\r\n",
+					"    output_list = []\r\n",
+					"    i = 0\r\n",
+					"\r\n",
+					"    while (instruction_available == True) & (i < 1000):\r\n",
+					"\r\n",
+					"        opcode = int(program_list[instruction_pointer])\r\n",
+					"        operand = int(program_list[instruction_pointer + 1])\r\n",
+					"        auto_jump = True\r\n",
+					"        #print(f\"opcode: {opcode}, operand: {operand}, instruction_pointer: {instruction_pointer}\")\r\n",
+					"\r\n",
+					"        output, instruction_pointer, register_a, register_b, register_c, auto_jump = perform_instruction(opcode, operand, instruction_pointer, auto_jump, register_a, register_b, register_c)\r\n",
+					"\r\n",
+					"        if output >= 0:\r\n",
+					"            output_list += [output]\r\n",
+					"\r\n",
+					"        # iteration management\r\n",
+					"        if auto_jump == True:\r\n",
+					"            instruction_pointer += 2\r\n",
+					"\r\n",
+					"        if instruction_pointer >= len(program_list):\r\n",
+					"            instruction_available = False\r\n",
+					"\r\n",
+					"        i += 1\r\n",
+					"\r\n",
+					"    return ','.join([str(o) for o in output_list])"
+				],
+				"execution_count": 221
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# part b\r\n",
+					"reg_a = 6836963\r\n",
+					"program = '2,4,1,2,7,5,0,3,4,7,1,7,5,5,3,0'\r\n",
+					"no_match = True\r\n",
+					"\r\n",
+					"while (no_match):\r\n",
+					"\r\n",
+					"    output = run_program(reg_a, program)\r\n",
+					"    if program == output:\r\n",
+					"        no_match = False\r\n",
+					"    \r\n",
+					"        print(f\"running reg_a: {reg_a} returned: {output}\")\r\n",
+					"        \r\n",
+					"    reg_a += 1\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 227
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"reg_a"
+				],
+				"execution_count": 228
 			}
 		]
 	}
