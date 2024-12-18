@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "80392140-2424-4db5-b713-1179c32a1db3"
+				"spark.autotune.trackingId": "7b4c3dd1-1542-4ba5-9aad-4994b05302c7"
 			}
 		},
 		"metadata": {
@@ -64,7 +64,7 @@
 				"source": [
 					"import math"
 				],
-				"execution_count": 198
+				"execution_count": 43
 			},
 			{
 				"cell_type": "code",
@@ -100,7 +100,7 @@
 					"\r\n",
 					"    return int(o)"
 				],
-				"execution_count": 199
+				"execution_count": 44
 			},
 			{
 				"cell_type": "code",
@@ -164,7 +164,7 @@
 					"    return out, ip, ra, rb, rc, aj\r\n",
 					""
 				],
-				"execution_count": 200
+				"execution_count": 45
 			},
 			{
 				"cell_type": "code",
@@ -177,7 +177,7 @@
 					"program = '0,1,5,4,3,0'\r\n",
 					"program_list = program.split(',')"
 				],
-				"execution_count": 202
+				"execution_count": 46
 			},
 			{
 				"cell_type": "code",
@@ -201,7 +201,7 @@
 					"program = '2,4,1,2,7,5,0,3,4,7,1,7,5,5,3,0'\r\n",
 					"program_list = program.split(',')"
 				],
-				"execution_count": 213
+				"execution_count": 47
 			},
 			{
 				"cell_type": "code",
@@ -246,7 +246,7 @@
 					"final_output = ','.join([str(o) for o in output_list])\r\n",
 					"print (final_output)"
 				],
-				"execution_count": 217
+				"execution_count": 48
 			},
 			{
 				"cell_type": "code",
@@ -294,7 +294,7 @@
 					"\r\n",
 					"    return ','.join([str(o) for o in output_list])"
 				],
-				"execution_count": 221
+				"execution_count": 49
 			},
 			{
 				"cell_type": "code",
@@ -310,10 +310,17 @@
 					}
 				},
 				"source": [
-					"# part b\r\n",
-					"reg_a = 6836963\r\n",
+					"# part b \r\n",
 					"program = '2,4,1,2,7,5,0,3,4,7,1,7,5,5,3,0'\r\n",
 					"no_match = True\r\n",
+					"\r\n",
+					"reg_a = 190384113200000    \r\n",
+					"incr = 1\r\n",
+					"chk = -31\r\n",
+					"\r\n",
+					"reg_a = 100000000000000\r\n",
+					"incr = 1000000000000\r\n",
+					"chk = -3\r\n",
 					"\r\n",
 					"while (no_match):\r\n",
 					"\r\n",
@@ -322,29 +329,19 @@
 					"        no_match = False\r\n",
 					"    \r\n",
 					"        print(f\"running reg_a: {reg_a} returned: {output}\")\r\n",
+					"    else:\r\n",
+					"        if (reg_a % (incr * 100) == 0):\r\n",
+					"            print(f\"at reg_a: {reg_a}  {output}\")\r\n",
+					"        elif (output[chk:] == program[chk:]):\r\n",
+					"            if incr >= 10:\r\n",
+					"                incr = int(incr / 10)\r\n",
+					"                chk =chk - 2\r\n",
+					"            print(f\"running reg_a: {reg_a} returned: {output}\")\r\n",
 					"        \r\n",
-					"    reg_a += 1\r\n",
+					"    reg_a += incr\r\n",
 					""
 				],
-				"execution_count": 227
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"reg_a"
-				],
-				"execution_count": 228
+				"execution_count": 94
 			}
 		]
 	}
