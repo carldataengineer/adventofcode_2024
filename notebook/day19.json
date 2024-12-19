@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "9a0465cb-7626-4634-ba92-44a4767a356d"
+				"spark.autotune.trackingId": "ab19eab3-d76c-4158-b5b9-5d0938cc0755"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 218
+				"execution_count": 227
 			},
 			{
 				"cell_type": "code",
@@ -81,7 +81,7 @@
 					"                    , names=['design']\r\n",
 					"                    , colspecs=[[0,100]])"
 				],
-				"execution_count": 219
+				"execution_count": 228
 			},
 			{
 				"cell_type": "code",
@@ -104,7 +104,7 @@
 					"df_designs['colour_sequence'] = ''\r\n",
 					"df_designs.head()"
 				],
-				"execution_count": 210
+				"execution_count": 237
 			},
 			{
 				"cell_type": "code",
@@ -130,7 +130,7 @@
 					"stripes = list(range(1, max_stripe+1))\r\n",
 					"df_towels.head()"
 				],
-				"execution_count": 211
+				"execution_count": 238
 			},
 			{
 				"cell_type": "code",
@@ -156,7 +156,10 @@
 					"\r\n",
 					"    df_match = df_d.merge(df_t, how='left', left_on=['look_for_colours','look_for_stripes'], right_on=['colours','stripes'], suffixes=('', '_clr'), indicator = True)\r\n",
 					"    df_match = df_match[(df_match['_merge'] == 'both') | ((df_match['_merge'] == 'left_only') & (df_match['sequence_mapped'] == True))]\r\n",
-					"    df_match['colour_sequence'] = df_match.apply(lambda row: row.colour_sequence if row.sequence_mapped == True else row.colour_sequence + ',' + row.colours, axis=1)\r\n",
+					"    if df_match.shape[0] > 0:\r\n",
+					"        df_match['colour_sequence'] = df_match.apply(lambda row: row.colour_sequence if row.sequence_mapped == True else row.colour_sequence + ',' + row.colours, axis=1)\r\n",
+					"    else:\r\n",
+					"        df_match['colour_sequence'] = ''\r\n",
 					"    df_match = df_match[['design_id','design','sequence_mapped','colour_sequence','new_unmatched']]\r\n",
 					"    df_match.columns = ('design_id','design','sequence_mapped','colour_sequence','unmatched')\r\n",
 					"\r\n",
@@ -166,7 +169,7 @@
 					"\r\n",
 					"    return df_match, us_count"
 				],
-				"execution_count": 212
+				"execution_count": 249
 			},
 			{
 				"cell_type": "code",
@@ -182,15 +185,42 @@
 					}
 				},
 				"source": [
-					"unmapped_sequence = df_designs[df_designs['sequence_mapped']==False].shape[0]\r\n",
+					"i = 0\r\n",
 					"\r\n",
-					"while unmapped_sequence > 0:\r\n",
-					"    df_designs, unmapped_sequence = match_towel(df_designs, df_towels)\r\n",
+					"# for d in range(df_designs.shape[0]):\r\n",
+					"for d in range(2):    \r\n",
 					"\r\n",
-					"df_designs.head(20)\r\n",
+					"    unmapped_sequence = 1\r\n",
+					"    df_design = df_designs[df_designs['design_id']==i].copy()\r\n",
+					"\r\n",
+					"    while unmapped_sequence > 0:\r\n",
+					"        df_design, unmapped_sequence = match_towel(df_design, df_towels)\r\n",
+					"\r\n",
+					"        print(f\"Design {d}: Iteration:{i} leaves {unmapped_sequence} unmapped\")\r\n",
+					"    \r\n",
+					"        i += 1\r\n",
+					"    df_design.head(20)\r\n",
 					"    "
 				],
-				"execution_count": 213
+				"execution_count": 250
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_design.head(20)"
+				],
+				"execution_count": 251
 			},
 			{
 				"cell_type": "code",
@@ -238,7 +268,7 @@
 					}
 				},
 				"source": [
-					"df_d = df_designs\r\n",
+					"df_d = df_design\r\n",
 					"#df_d['look_for_stripes'] = [stripes] * df_d.shape[0]\r\n",
 					"df_d['look_for_stripes'] = df_d.apply(lambda row: stripes if row.sequence_mapped == False else 0, axis=1)\r\n",
 					"df_d = df_d.explode('look_for_stripes')\r\n",
@@ -247,7 +277,7 @@
 					"df_d.head(20)\r\n",
 					""
 				],
-				"execution_count": 201
+				"execution_count": 246
 			},
 			{
 				"cell_type": "code",
@@ -265,15 +295,17 @@
 				"source": [
 					"df_t = df_towels\r\n",
 					"\r\n",
-					"df_match = df_d.merge(df_t, how='left', left_on=['look_for_colours'], right_on=['colours'], suffixes=('', '_clr'), indicator = True)\r\n",
+					"df_match = df_d.merge(df_t, how='left', left_on=['look_for_colours','look_for_stripes'], right_on=['colours','stripes'], suffixes=('', '_clr'), indicator = True)\r\n",
 					"df_match = df_match[(df_match['_merge'] == 'both') | ((df_match['_merge'] == 'left_only') & (df_match['sequence_mapped'] == True))]\r\n",
-					"df_match['colour_sequence'] = df_match['colour_sequence'] + ',' + df_match['colours']\r\n",
-					"df_match = df_match[['design_id','design','sequence_mapped','colour_sequence','new_unmatched']]\r\n",
-					"df_match.columns = ('design_id','design','sequence_mapped','colour_sequence','unmatched')\r\n",
+					"#df_match['colour_sequence'] = df_match.apply(lambda row: row.colour_sequence if row.sequence_mapped == True else row.colour_sequence + ',' + row.colours, axis=1)\r\n",
+					"#df_match = df_match[['design_id','design','sequence_mapped','colour_sequence','new_unmatched']]\r\n",
+					"#df_match.columns = ('design_id','design','sequence_mapped','colour_sequence','unmatched')\r\n",
+					"\r\n",
+					"#df_match['sequence_mapped'] = df_match.apply(lambda row: True if row.unmatched == '' else False, axis=1)\r\n",
 					"df_match.head(20)\r\n",
 					""
 				],
-				"execution_count": 110
+				"execution_count": 248
 			},
 			{
 				"cell_type": "markdown",
