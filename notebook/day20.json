@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "491839ac-3b95-447c-a932-7c7afd944592"
+				"spark.autotune.trackingId": "1d36e19d-b480-4def-8ef0-dc4c50cf78e4"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 69
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -69,13 +69,13 @@
 					}
 				},
 				"source": [
-					"x_tiles = 15\r\n",
+					"x_tiles = 141\r\n",
 					"\r\n",
 					"col_specs = []\r\n",
 					"for i in range(x_tiles):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day20/test_input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day20/input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -84,7 +84,7 @@
 					"y_tiles = df_input.shape[0]\r\n",
 					"df_input.head(20)"
 				],
-				"execution_count": 70
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -112,7 +112,7 @@
 					"\r\n",
 					"df_racetrack.head()"
 				],
-				"execution_count": 71
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -142,7 +142,7 @@
 					"\r\n",
 					"    return _can_move, _pos"
 				],
-				"execution_count": 72
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -168,11 +168,11 @@
 					"    cur_y = cur_yx[0][0]\r\n",
 					"    cur_x = cur_yx[0][1]\r\n",
 					"    # print(f\" Currently at ({cur_y},{cur_x})\")\r\n",
-					"    \r\n",
+					"\r\n",
 					"    pico_seconds += 1\r\n",
 					"    df_racetrack.loc[cur_yx] = pico_seconds"
 				],
-				"execution_count": 73
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -190,7 +190,7 @@
 				"source": [
 					"df_racetrack.unstack()"
 				],
-				"execution_count": 116
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -207,18 +207,26 @@
 				},
 				"source": [
 					"def adj_y(row):\r\n",
-					"    if row['urdl'] == 'd':\r\n",
+					"    if row['urdl'] == 'u':\r\n",
+					"        row['wall_x'] = row['x']\r\n",
+					"        row['wall_y'] = row['y'] - 1\r\n",
 					"        row['y'] = row['y'] - 2\r\n",
-					"    elif row['urdl'] == 'l':\r\n",
-					"        row['x'] = row['x'] + 2\r\n",
-					"    elif row['urdl'] == 'u':\r\n",
-					"        row['y'] = row['y'] + 2\r\n",
 					"    elif row['urdl'] == 'r':\r\n",
+					"        row['wall_x'] = row['x'] + 1\r\n",
+					"        row['wall_y'] = row['y']\r\n",
+					"        row['x'] = row['x'] + 2\r\n",
+					"    elif row['urdl'] == 'd':\r\n",
+					"        row['wall_x'] = row['x']\r\n",
+					"        row['wall_y'] = row['y'] + 1\r\n",
+					"        row['y'] = row['y'] + 2\r\n",
+					"    elif row['urdl'] == 'l':\r\n",
+					"        row['wall_x'] = row['x'] - 1\r\n",
+					"        row['wall_y'] = row['y']\r\n",
 					"        row['x'] = row['x'] - 2\r\n",
 					"    \r\n",
 					"    return row"
 				],
-				"execution_count": 117
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -236,7 +244,7 @@
 				"source": [
 					"# adj_y(df_racetrack_exp.iloc[0])"
 				],
-				"execution_count": 106
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -252,6 +260,8 @@
 					}
 				},
 				"source": [
+					"df_walls = df_racetrack[df_racetrack['contents'] == '#'].copy()\r\n",
+					"\r\n",
 					"df_racetrack_xy = df_racetrack[df_racetrack['contents'] != '#'].copy()\r\n",
 					"df_racetrack_xy.loc[start_xy.index] = 0\r\n",
 					"df_racetrack_xy.reset_index(inplace=True)\r\n",
@@ -259,7 +269,7 @@
 					"df_racetrack_xy['pico_seconds'].apply(int)\r\n",
 					"df_racetrack_xy.head()"
 				],
-				"execution_count": 122
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -281,7 +291,7 @@
 					"df_racetrack_exp = df_racetrack_exp.apply(adj_y, axis=1)\r\n",
 					"df_racetrack_exp.head(10)"
 				],
-				"execution_count": 123
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -299,10 +309,20 @@
 				"source": [
 					"df_cheats = df_racetrack_xy.merge(df_racetrack_exp, how='inner', left_on=['y','x'], right_on=['y','x'], suffixes=('','_exp'))\r\n",
 					"df_cheats['saving'] = df_cheats['pico_seconds_exp'] - df_cheats['pico_seconds'] - 2\r\n",
-					"df_good_cheats = df_cheats[df_cheats['saving'] > 2]\r\n",
-					"df_good_cheats.sort_values('saving', ascending=True).head(50)"
+					"\r\n",
+					"# check a wall en route\r\n",
+					"df_wall_cheats = df_cheats.merge(df_walls, how='inner', left_on=['wall_y','wall_x'], right_on=['y','x'], suffixes=('','_wall'))\r\n",
+					"\r\n",
+					"# check for savings\r\n",
+					"df_good_cheats = df_wall_cheats[df_wall_cheats['saving'] > 1]\r\n",
+					"# df_good_cheats.sort_values('saving', ascending=True).head(50)\r\n",
+					"\r\n",
+					"# report \r\n",
+					"df_results = df_good_cheats.groupby('saving')['pico_seconds'].count().to_frame()\r\n",
+					"df_results.rename(columns={'pico_seconds': 'count'}, inplace=True)\r\n",
+					"df_results.head()"
 				],
-				"execution_count": 130
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -318,9 +338,9 @@
 					}
 				},
 				"source": [
-					""
+					"df_results[df_results.index >= 10]['count'].sum()"
 				],
-				"execution_count": null
+				"execution_count": 17
 			}
 		]
 	}
