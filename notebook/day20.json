@@ -1,0 +1,197 @@
+{
+	"name": "day20",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "6529c5b5-2038-48bb-afed-25b4cf54fe8e"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"x_tiles = 15\r\n",
+					"\r\n",
+					"col_specs = []\r\n",
+					"for i in range(x_tiles):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day20/test_input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"\r\n",
+					"y_tiles = df_input.shape[0]\r\n",
+					"df_input.head(20)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# pivot to list of coordinates\r\n",
+					"df_racetrack = df_input.stack().to_frame().rename_axis(index=('y','x'))\r\n",
+					"df_racetrack.columns = ['contents']\r\n",
+					"\r\n",
+					"#find the start\r\n",
+					"start_xy = df_racetrack[df_racetrack['contents'] == 'S']\r\n",
+					"start_y = start_xy.index[0][0]\r\n",
+					"start_x = start_xy.index[0][1]\r\n",
+					"print(f\" Start at ({start_y},{start_x})\")\r\n",
+					"\r\n",
+					"df_racetrack.head()"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def move(y, x, df_track):\r\n",
+					"\r\n",
+					"    locations = [[y-1,x],[y,x+1],[y+1,x],[y,x-1]]\r\n",
+					"    df_track = df_racetrack[df_racetrack.index.isin(locations) & (df_racetrack['contents'] == '.')]\r\n",
+					"    if df_track.shape[0] > 0:\r\n",
+					"        _can_move = True\r\n",
+					"        _pos = df_track.index\r\n",
+					"    else:\r\n",
+					"        df_track = df_racetrack[df_racetrack.index.isin(locations) & (df_racetrack['contents'] == 'E')]\r\n",
+					"        _can_move = False\r\n",
+					"        _pos = df_track.index\r\n",
+					"\r\n",
+					"    return _can_move, _pos"
+				],
+				"execution_count": 34
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"can_move = True\r\n",
+					"cur_x = start_x\r\n",
+					"cur_y = start_y\r\n",
+					"pico_seconds = 0\r\n",
+					"\r\n",
+					"while can_move:\r\n",
+					"    can_move, cur_yx = move(cur_y, cur_x, df_racetrack)\r\n",
+					"    cur_y = cur_yx[0][0]\r\n",
+					"    cur_x = cur_yx[0][1]\r\n",
+					"    # print(f\" Currently at ({cur_y},{cur_x})\")\r\n",
+					"    \r\n",
+					"    pico_seconds += 1\r\n",
+					"    df_racetrack.loc[cur_yx] = pico_seconds"
+				],
+				"execution_count": 37
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_racetrack.unstack()"
+				],
+				"execution_count": 38
+			}
+		]
+	}
+}
