@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1d36e19d-b480-4def-8ef0-dc4c50cf78e4"
+				"spark.autotune.trackingId": "909b31c8-98ea-4d98-bda2-8b9ce1f2eb32"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 3
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
@@ -84,7 +84,7 @@
 					"y_tiles = df_input.shape[0]\r\n",
 					"df_input.head(20)"
 				],
-				"execution_count": 4
+				"execution_count": 19
 			},
 			{
 				"cell_type": "code",
@@ -112,7 +112,7 @@
 					"\r\n",
 					"df_racetrack.head()"
 				],
-				"execution_count": 5
+				"execution_count": 20
 			},
 			{
 				"cell_type": "code",
@@ -142,7 +142,7 @@
 					"\r\n",
 					"    return _can_move, _pos"
 				],
-				"execution_count": 6
+				"execution_count": 21
 			},
 			{
 				"cell_type": "code",
@@ -172,7 +172,7 @@
 					"    pico_seconds += 1\r\n",
 					"    df_racetrack.loc[cur_yx] = pico_seconds"
 				],
-				"execution_count": 7
+				"execution_count": 22
 			},
 			{
 				"cell_type": "code",
@@ -190,7 +190,7 @@
 				"source": [
 					"df_racetrack.unstack()"
 				],
-				"execution_count": 8
+				"execution_count": 23
 			},
 			{
 				"cell_type": "code",
@@ -226,7 +226,7 @@
 					"    \r\n",
 					"    return row"
 				],
-				"execution_count": 9
+				"execution_count": 24
 			},
 			{
 				"cell_type": "code",
@@ -244,7 +244,7 @@
 				"source": [
 					"# adj_y(df_racetrack_exp.iloc[0])"
 				],
-				"execution_count": 10
+				"execution_count": 25
 			},
 			{
 				"cell_type": "code",
@@ -269,7 +269,7 @@
 					"df_racetrack_xy['pico_seconds'].apply(int)\r\n",
 					"df_racetrack_xy.head()"
 				],
-				"execution_count": 11
+				"execution_count": 26
 			},
 			{
 				"cell_type": "code",
@@ -291,7 +291,7 @@
 					"df_racetrack_exp = df_racetrack_exp.apply(adj_y, axis=1)\r\n",
 					"df_racetrack_exp.head(10)"
 				],
-				"execution_count": 12
+				"execution_count": 27
 			},
 			{
 				"cell_type": "code",
@@ -314,7 +314,7 @@
 					"df_wall_cheats = df_cheats.merge(df_walls, how='inner', left_on=['wall_y','wall_x'], right_on=['y','x'], suffixes=('','_wall'))\r\n",
 					"\r\n",
 					"# check for savings\r\n",
-					"df_good_cheats = df_wall_cheats[df_wall_cheats['saving'] > 1]\r\n",
+					"df_good_cheats = df_wall_cheats[df_wall_cheats['saving'] >= 100]\r\n",
 					"# df_good_cheats.sort_values('saving', ascending=True).head(50)\r\n",
 					"\r\n",
 					"# report \r\n",
@@ -322,7 +322,7 @@
 					"df_results.rename(columns={'pico_seconds': 'count'}, inplace=True)\r\n",
 					"df_results.head()"
 				],
-				"execution_count": 13
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
@@ -338,9 +338,11 @@
 					}
 				},
 				"source": [
-					"df_results[df_results.index >= 10]['count'].sum()"
+					"# 1364 - too low\r\n",
+					"# 4166 - too high\r\n",
+					"df_results[df_results.index >= 100]['count'].sum()"
 				],
-				"execution_count": 17
+				"execution_count": 36
 			}
 		]
 	}
