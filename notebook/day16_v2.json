@@ -1,0 +1,238 @@
+{
+	"name": "day16_v2",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "carlsmall",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "e8af8f16-7eda-4368-8974-0cfbad2e88a6"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/d3313606-ce08-408b-8d6e-0965e2fba137/resourceGroups/rg_carl_follows/providers/Microsoft.Synapse/workspaces/asa-wks-carl-follows/bigDataPools/carlsmall",
+				"name": "carlsmall",
+				"type": "Spark",
+				"endpoint": "https://asa-wks-carl-follows.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/carlsmall",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd"
+				],
+				"execution_count": 89
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"x_tiles = 141\r\n",
+					"\r\n",
+					"col_specs = []\r\n",
+					"for i in range(x_tiles):\r\n",
+					"    col_specs.append((i, i+1))\r\n",
+					"\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day16/test_input.txt\"\\\r\n",
+					"                    , header=None\\\r\n",
+					"                    , index_col=False\\\r\n",
+					"                    , colspecs=col_specs)\r\n",
+					"df_input.columns = range(0, len(df_input.columns))\r\n",
+					"\r\n",
+					"y_tiles = df_input.shape[0]\r\n",
+					"df_input.head()"
+				],
+				"execution_count": 90
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# pivot to list of coordinates\r\n",
+					"df_locations = df_input.stack().to_frame().rename_axis(index=('y','x'))\r\n",
+					"df_locations.columns = ['contents']\r\n",
+					"\r\n",
+					"#find the reindeer\r\n",
+					"reindeer_xy = df_locations[df_locations['contents'] == 'S']\r\n",
+					"reindeer_y = reindeer_xy.index[0][0]\r\n",
+					"reindeer_x = reindeer_xy.index[0][1]\r\n",
+					"reindeer_d = '>'\r\n",
+					"print(f\" Reindeer_x at ({reindeer_y},{reindeer_x})\")\r\n",
+					"\r\n",
+					"#df_locations.head(30)"
+				],
+				"execution_count": 91
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def urdl(row):\r\n",
+					"    if row['urdl'] == 'u':\r\n",
+					"        row['y'] = row.name[0] + 1\r\n",
+					"        row['x'] = row.name[1]\r\n",
+					"    elif row['urdl'] == 'r':\r\n",
+					"        row['y'] = row.name[0]\r\n",
+					"        row['x'] = row.name[1] - 1\r\n",
+					"    elif row['urdl'] == 'd':\r\n",
+					"        row['y'] = row.name[0] - 1\r\n",
+					"        row['x'] = row.name[1]\r\n",
+					"    elif row['urdl'] == 'l':\r\n",
+					"        row['y'] = row.name[0]\r\n",
+					"        row['x'] = row.name[1] + 1\r\n",
+					"    \r\n",
+					"    return row\r\n",
+					"\r\n",
+					"#r = df_available_locations.iloc[2].copy()\r\n",
+					"#print (f\"working on ({r.name[0]}, {r.name[1]})\")\r\n",
+					"#urdl(r)"
+				],
+				"execution_count": 92
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_visited_locations = df_locations[df_locations['contents'].isin(['.','#','E']) == False].copy()\r\n",
+					"df_visited_locations.head()"
+				],
+				"execution_count": 93
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_available_locations = df_locations[df_locations['contents'].isin(['.'])].copy()\r\n",
+					"df_available_locations['urdl'] = [['u','r','d','l']] * df_available_locations.shape[0]\r\n",
+					"df_available_locations = df_available_locations.explode('urdl')\r\n",
+					"df_available_locations = df_available_locations.apply(urdl, axis=1)\r\n",
+					"df_available_locations['y_move'] = df_available_locations.index.get_level_values(0)\r\n",
+					"df_available_locations['x_move'] = df_available_locations.index.get_level_values(1)\r\n",
+					"df_available_locations.set_index(['y','x'], inplace=True)\r\n",
+					"\r\n",
+					"locations = [(13,1),(13,2),(14,1),(14,2)]\r\n",
+					"df_available_locations[df_available_locations.index.isin(locations)].head()"
+				],
+				"execution_count": 94
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_visited_locations.merge(df_available_locations, how='inner', left_index=True, right_index=True, suffixes=('','_move'))"
+				],
+				"execution_count": 95
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
