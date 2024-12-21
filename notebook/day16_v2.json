@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "97c9036d-5af7-49b5-bc76-7c01af80cb42"
+				"spark.autotune.trackingId": "a4961c8e-a606-43e0-b9e2-b63df2ae3650"
 			}
 		},
 		"metadata": {
@@ -176,13 +176,13 @@
 					"        move_cost += 1000\r\n",
 					"\r\n",
 					"    row['contents_move'] = [move_step, move_cost, row['urdl']]\r\n",
-					"    print (f\"Taking step {move_step} at a cost of {move_cost} now pointing in direction {row['urdl']}\")\r\n",
+					"    #print (f\"Taking step {move_step} at a cost of {move_cost} now pointing in direction {row['urdl']}\")\r\n",
 					"    return row\r\n",
 					"\r\n",
 					"#r = df_move_locations.iloc[0].copy()\r\n",
 					"#move_cost(r)"
 				],
-				"execution_count": 168
+				"execution_count": 181
 			},
 			{
 				"cell_type": "code",
@@ -201,7 +201,7 @@
 					"df_visited_locations = df_locations[df_locations['contents'].isin(['.','#','E']) == False].copy()\r\n",
 					"df_visited_locations.head()"
 				],
-				"execution_count": 174
+				"execution_count": 178
 			},
 			{
 				"cell_type": "code",
@@ -225,31 +225,15 @@
 					"df_available_locations['x_move'] = df_available_locations.index.get_level_values(1)\r\n",
 					"df_available_locations.set_index(['y','x'], inplace=True)\r\n",
 					"\r\n",
-					"locations = [(13,1),(13,2),(14,1),(14,2)]\r\n",
-					"df_available_locations[df_available_locations.index.isin(locations)].head()"
-				],
-				"execution_count": 170
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
+					"#locations = [(13,1),(13,2),(14,1),(14,2)]\r\n",
+					"#df_available_locations[df_available_locations.index.isin(locations)].head()\r\n",
+					"\r\n",
 					"df_move_locations = df_visited_locations.merge(df_available_locations, how='inner', left_index=True, right_index=True, suffixes=('','_move'))\r\n",
 					"df_move_locations = df_move_locations.set_index(['y_move','x_move']).rename_axis(index=('y','x'))\r\n",
 					"df_move_locations = df_move_locations.apply(move_cost, axis=1)\r\n",
 					"df_move_locations.head()"
 				],
-				"execution_count": 171
+				"execution_count": 180
 			},
 			{
 				"cell_type": "code",
@@ -265,9 +249,9 @@
 					}
 				},
 				"source": [
-					"df_locations.loc[df_move_locations.index, ['contents']] = df_move_locations[['contents_move']]"
+					"df_locations.loc[df_move_locations.index, ['contents']] = df_move_locations['contents_move']"
 				],
-				"execution_count": 173
+				"execution_count": 176
 			},
 			{
 				"cell_type": "code",
@@ -286,7 +270,25 @@
 					"df_visited_locations = df_locations[df_locations['contents'].isin(['.','#','E']) == False].copy()\r\n",
 					"df_visited_locations.head()"
 				],
-				"execution_count": 175
+				"execution_count": 177
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
 			}
 		]
 	}
