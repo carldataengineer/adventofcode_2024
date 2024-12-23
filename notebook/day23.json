@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "9bd0b351-b2a7-491e-89b3-b8b84f3add6f"
+				"spark.autotune.trackingId": "77e87ccf-72e3-41c1-b78c-9ead159f5519"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 8
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -76,7 +76,7 @@
 					"                    , names=['computer_a', 'computer_b'])\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 9
+				"execution_count": 14
 			},
 			{
 				"cell_type": "code",
@@ -95,7 +95,7 @@
 					"df_connection = df_input.copy()\r\n",
 					"df_connection.index.name = 'connection_id'"
 				],
-				"execution_count": 10
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -113,14 +113,14 @@
 				"source": [
 					"def select_computer(row):\r\n",
 					"\r\n",
-					"    if ['ab'] == 'a':\r\n",
+					"    if row['ab'] == 'a':\r\n",
 					"        row['computer'] = row['computer_a']\r\n",
 					"    else:\r\n",
 					"        row['computer'] = row['computer_b']\r\n",
 					"\r\n",
 					"    return row"
 				],
-				"execution_count": 11
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -140,9 +140,10 @@
 					"df_computers['ab'] = [['a','b']] * df_computers.shape[0]\r\n",
 					"df_computers = df_computers.explode('ab')\r\n",
 					"df_computers = df_computers.apply(select_computer, axis=1)\r\n",
+					"df_computers = df_computers[['computer']]\r\n",
 					"df_computers.head()"
 				],
-				"execution_count": 12
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
