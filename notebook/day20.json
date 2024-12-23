@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "909b31c8-98ea-4d98-bda2-8b9ce1f2eb32"
+				"spark.autotune.trackingId": "81fcb2e0-d718-49bc-b49b-82c115b5e707"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 18
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -75,7 +75,7 @@
 					"for i in range(x_tiles):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day20/input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day20/test_input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -84,7 +84,7 @@
 					"y_tiles = df_input.shape[0]\r\n",
 					"df_input.head(20)"
 				],
-				"execution_count": 19
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
@@ -112,7 +112,7 @@
 					"\r\n",
 					"df_racetrack.head()"
 				],
-				"execution_count": 20
+				"execution_count": 19
 			},
 			{
 				"cell_type": "code",
@@ -142,7 +142,7 @@
 					"\r\n",
 					"    return _can_move, _pos"
 				],
-				"execution_count": 21
+				"execution_count": 20
 			},
 			{
 				"cell_type": "code",
@@ -172,7 +172,7 @@
 					"    pico_seconds += 1\r\n",
 					"    df_racetrack.loc[cur_yx] = pico_seconds"
 				],
-				"execution_count": 22
+				"execution_count": 21
 			},
 			{
 				"cell_type": "code",
@@ -190,7 +190,7 @@
 				"source": [
 					"df_racetrack.unstack()"
 				],
-				"execution_count": 23
+				"execution_count": 22
 			},
 			{
 				"cell_type": "code",
@@ -224,27 +224,11 @@
 					"        row['wall_y'] = row['y']\r\n",
 					"        row['x'] = row['x'] - 2\r\n",
 					"    \r\n",
-					"    return row"
-				],
-				"execution_count": 24
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": true
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
+					"    return row\r\n",
+					"\r\n",
 					"# adj_y(df_racetrack_exp.iloc[0])"
 				],
-				"execution_count": 25
+				"execution_count": 23
 			},
 			{
 				"cell_type": "code",
@@ -269,7 +253,7 @@
 					"df_racetrack_xy['pico_seconds'].apply(int)\r\n",
 					"df_racetrack_xy.head()"
 				],
-				"execution_count": 26
+				"execution_count": 24
 			},
 			{
 				"cell_type": "code",
@@ -291,7 +275,7 @@
 					"df_racetrack_exp = df_racetrack_exp.apply(adj_y, axis=1)\r\n",
 					"df_racetrack_exp.head(10)"
 				],
-				"execution_count": 27
+				"execution_count": 25
 			},
 			{
 				"cell_type": "code",
@@ -314,15 +298,15 @@
 					"df_wall_cheats = df_cheats.merge(df_walls, how='inner', left_on=['wall_y','wall_x'], right_on=['y','x'], suffixes=('','_wall'))\r\n",
 					"\r\n",
 					"# check for savings\r\n",
-					"df_good_cheats = df_wall_cheats[df_wall_cheats['saving'] >= 100]\r\n",
+					"df_good_cheats = df_wall_cheats[df_wall_cheats['saving'] >= 10]\r\n",
 					"# df_good_cheats.sort_values('saving', ascending=True).head(50)\r\n",
 					"\r\n",
 					"# report \r\n",
 					"df_results = df_good_cheats.groupby('saving')['pico_seconds'].count().to_frame()\r\n",
 					"df_results.rename(columns={'pico_seconds': 'count'}, inplace=True)\r\n",
-					"df_results.head()"
+					"df_results.head(10)"
 				],
-				"execution_count": 35
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -343,6 +327,130 @@
 					"df_results[df_results.index >= 100]['count'].sum()"
 				],
 				"execution_count": 36
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Part 2"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"end_ps = df_racetrack_xy['pico_seconds'].max()\r\n",
+					"\r\n",
+					"cheat_specs = []\r\n",
+					"for i in range(-20, 21):\r\n",
+					"    cheat_specs.append((i))"
+				],
+				"execution_count": 99
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_racetrack_xy_p2 = df_racetrack_xy[(df_racetrack_xy['pico_seconds'] > 0) & (df_racetrack_xy['pico_seconds'] < end_ps)].copy()\r\n",
+					"df_racetrack_xy_p2['x_plus_y'] = df_racetrack_xy_p2['x'] + df_racetrack_xy_p2['y']\r\n",
+					"df_racetrack_xy_p2['cheat_specs'] = [cheat_specs] * df_racetrack_xy_p2.shape[0]\r\n",
+					"df_racetrack_xy_p2 = df_racetrack_xy_p2.explode('cheat_specs')\r\n",
+					"df_racetrack_xy_p2.reset_index(inplace=True, drop=True)\r\n",
+					"df_racetrack_xy_p2['x_plus_y_cheat'] = df_racetrack_xy_p2['x_plus_y'] + df_racetrack_xy_p2['cheat_specs']\r\n",
+					"df_racetrack_xy_p2.head(10)"
+				],
+				"execution_count": 100
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_shortcuts_p2 = df_racetrack_xy_p2.merge(df_racetrack_xy_p2, how='inner', left_on='x_plus_y_cheat', right_on='x_plus_y', suffixes=('','_move'))\r\n",
+					"#df_shortcuts_p2.head()\r\n",
+					"\r\n",
+					"df_shortcuts_p2 = df_shortcuts_p2.groupby(['y','x','pico_seconds','y_move','x_move'])['pico_seconds_move'].min().to_frame()\r\n",
+					"#df_results_p2.set_index(['y','x'], inplace=True)\r\n",
+					"df_shortcuts_p2.reset_index(inplace=True)\r\n",
+					"df_shortcuts_p2['saving'] = df_shortcuts_p2['pico_seconds_move'] - df_shortcuts_p2['pico_seconds'] \r\n",
+					"df_shortcuts_p2 = df_shortcuts_p2[df_shortcuts_p2['saving']>=50]\r\n",
+					"\r\n",
+					"df_results_p2 = df_shortcuts_p2.groupby(['saving'])['pico_seconds_move'].count().to_frame()\r\n",
+					"df_results_p2.head(20)"
+				],
+				"execution_count": 101
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_inspect_p2 = df_shortcuts_p2[df_shortcuts_p2['saving'] == 51]\r\n",
+					"df_inspect_p2.head()"
+				],
+				"execution_count": 105
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
 			}
 		]
 	}
