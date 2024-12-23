@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "06813942-8d74-43af-b0e2-eea92e681bed"
+				"spark.autotune.trackingId": "28bf37cf-5ce5-4cc7-90a0-51e8fdf26f8f"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 13
+				"execution_count": 63
 			},
 			{
 				"cell_type": "code",
@@ -76,28 +76,7 @@
 					"                    , names=['computer_a', 'computer_b'])\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 14
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"df_connection = df_input.copy()\r\n",
-					"df_connection.index.name = 'connection_id'\r\n",
-					"df_connection.reset_index(inplace=True)\r\n",
-					"df_connection.head()"
-				],
-				"execution_count": 33
+				"execution_count": 71
 			},
 			{
 				"cell_type": "code",
@@ -122,7 +101,28 @@
 					"\r\n",
 					"    return row"
 				],
-				"execution_count": 16
+				"execution_count": 74
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_connection = df_input.copy()\r\n",
+					"df_connection.index.name = 'connection_id'\r\n",
+					"df_connection.reset_index(inplace=True)\r\n",
+					"df_connection.head()"
+				],
+				"execution_count": 87
 			},
 			{
 				"cell_type": "code",
@@ -146,7 +146,7 @@
 					"df_computers = df_computers[['connection_id','computer']]\r\n",
 					"df_computers.head()"
 				],
-				"execution_count": 36
+				"execution_count": 88
 			},
 			{
 				"cell_type": "code",
@@ -162,10 +162,23 @@
 					}
 				},
 				"source": [
-					"df_join = df_computers.merge(df_connection, how='left', left_on=['computer'], right_on=['computer_a'], suffixes=('','_joina'))\r\n",
-					"df_join.head()"
+					"# check a\r\n",
+					"df_join_a = df_computers.merge(df_connection, how='inner', left_on=['computer'], right_on=['computer_a'], suffixes=('','_joina'))\r\n",
+					"df_join_a.rename(columns={'connection_id_joina': 'join_connection_id', 'computer_b': 'join_computer'}, inplace=True)\r\n",
+					"df_join_a = df_join_a[['connection_id', 'computer', 'join_connection_id', 'join_computer']]\r\n",
+					"df_join_a = df_join_a[df_join_a['join_connection_id'] != df_join_a['connection_id']]\r\n",
+					"\r\n",
+					"# check a\r\n",
+					"df_join_b = df_computers.merge(df_connection, how='inner', left_on=['computer'], right_on=['computer_b'], suffixes=('','_joinb'))\r\n",
+					"df_join_b.rename(columns={'connection_id_joinb': 'join_connection_id', 'computer_a': 'join_computer'}, inplace=True)\r\n",
+					"df_join_b = df_join_b[['connection_id', 'computer', 'join_connection_id', 'join_computer']]\r\n",
+					"df_join_b = df_join_b[df_join_b['join_connection_id'] != df_join_b['connection_id']]\r\n",
+					"\r\n",
+					"df_join = pd.concat([df_join_a,df_join_b])\r\n",
+					"#df_join['network'] = df_join['computer'] + ',' + df_join['join_computer']\r\n",
+					"df_join.sort_values(['connection_id', 'computer']).head(50)"
 				],
-				"execution_count": 38
+				"execution_count": 104
 			},
 			{
 				"cell_type": "code",
@@ -181,9 +194,152 @@
 					}
 				},
 				"source": [
+					"df_cycle = df_join.merge(df_join, how='inner', left_on=['join_computer'], right_on=['join_computer'], suffixes=('_l', '_r'))\r\n",
+					"df_map = df_cycle[(df_cycle['connection_id_l'] == df_cycle['connection_id_r']) & (df_cycle['computer_l'] != df_cycle['computer_r'])]\r\n",
+					"df_map.head()"
+				],
+				"execution_count": 112
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": true
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"connections_available = True\r\n",
+					"i = 1\r\n",
+					"\r\n",
+					"while connections_available:\r\n",
+					"    #reset\r\n",
+					"    connections_available = False\r\n",
+					"\r\n",
+					"    # check a\r\n",
+					"    df_join_a = df_computers.merge(df_connection, how='left', left_on=['computer'], right_on=['computer_a'], suffixes=('','_joina'))\r\n",
+					"\r\n",
+					"    df_update_a = df_join_a.groupby(['connection_id_joina'])['connection_id'].min().to_frame()\r\n",
+					"    df_update_a.reset_index(inplace=True)\r\n",
+					"    df_update_a = df_update_a[df_update_a['connection_id_joina'] != df_update_a['connection_id']]\r\n",
+					"\r\n",
+					"    # update findings\r\n",
+					"    for idx, cid in df_update_a.iterrows():\r\n",
+					"        connections_available = True\r\n",
+					"        old_id = cid['connection_id_joina']\r\n",
+					"        new_id = cid['connection_id']\r\n",
+					"\r\n",
+					"        df_connection.loc[df_connection['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"        df_computers.loc[df_computers['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"\r\n",
+					"        print (f\"update {old_id} to {new_id} from a join, i: {i}\")\r\n",
+					"\r\n",
+					"    # check b\r\n",
+					"    df_join_b = df_computers.merge(df_connection, how='left', left_on=['computer'], right_on=['computer_b'], suffixes=('','_joinb'))\r\n",
+					"\r\n",
+					"    df_update_b = df_join_b.groupby(['connection_id_joinb'])['connection_id'].min().to_frame()\r\n",
+					"    df_update_b.reset_index(inplace=True)\r\n",
+					"    df_update_b = df_update_b[df_update_b['connection_id_joinb'] != df_update_b['connection_id']]\r\n",
+					"\r\n",
+					"    # update findings\r\n",
+					"    for idx, cid in df_update_b.iterrows():\r\n",
+					"        connections_available = True\r\n",
+					"        old_id = cid['connection_id_joinb']\r\n",
+					"        new_id = cid['connection_id']\r\n",
+					"\r\n",
+					"        df_connection.loc[df_connection['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"        df_computers.loc[df_computers['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"\r\n",
+					"        print (f\"update {old_id} to {new_id} from b join, i: {i}\")\r\n",
+					"    \r\n",
+					"    i += 1\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 68
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"# update findings\r\n",
+					"for idx, cid in df_update_a.iterrows():\r\n",
+					"    connections_available = True\r\n",
+					"    old_id = cid['connection_id_joina']\r\n",
+					"    new_id = cid['connection_id']\r\n",
+					"\r\n",
+					"    df_connection.loc[df_connection['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"    df_computers.loc[df_computers['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"\r\n",
+					"    print (f\"update {old_id} to {new_id} from a join, i: {i}\")"
+				],
+				"execution_count": 76
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_join_b = df_computers.merge(df_connection, how='left', left_on=['computer'], right_on=['computer_b'], suffixes=('','_joinb'))\r\n",
+					"\r\n",
+					"df_update_b = df_join_b.groupby(['connection_id_joinb'])['connection_id'].min().to_frame()\r\n",
+					"df_update_b.reset_index(inplace=True)\r\n",
+					"df_update_b = df_update_b[df_update_b['connection_id_joinb'] != df_update_b['connection_id']]\r\n",
+					"\r\n",
+					"# update findings\r\n",
+					"for idx, cid in df_update_b.iterrows():\r\n",
+					"    connections_available = True\r\n",
+					"    old_id = cid['connection_id_joinb']\r\n",
+					"    new_id = cid['connection_id']\r\n",
+					"\r\n",
+					"    df_connection.loc[df_connection['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"    df_computers.loc[df_computers['connection_id'] == old_id, 'connection_id'] = new_id\r\n",
+					"\r\n",
+					"    print (f\"update {old_id} to {new_id} from b join, i: {i}\")"
+				],
+				"execution_count": 79
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_connection.sort_values('connection_id').head(50)"
+				],
+				"execution_count": 78
 			}
 		]
 	}
