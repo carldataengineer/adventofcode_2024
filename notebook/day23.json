@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "69fae763-6c6a-4e1d-b6c7-67bde3d35c54"
+				"spark.autotune.trackingId": "9bd0b351-b2a7-491e-89b3-b8b84f3add6f"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 1
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -76,7 +76,7 @@
 					"                    , names=['computer_a', 'computer_b'])\r\n",
 					"df_input.head()"
 				],
-				"execution_count": null
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -92,10 +92,73 @@
 					}
 				},
 				"source": [
-					"df_computers = df_computers.copy()\r\n",
-					"df_computers.index.name = 'computer_id'\r\n",
+					"df_connection = df_input.copy()\r\n",
+					"df_connection.index.name = 'connection_id'"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def select_computer(row):\r\n",
+					"\r\n",
+					"    if ['ab'] == 'a':\r\n",
+					"        row['computer'] = row['computer_a']\r\n",
+					"    else:\r\n",
+					"        row['computer'] = row['computer_b']\r\n",
+					"\r\n",
+					"    return row"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_computers = df_connection.copy()\r\n",
 					"df_computers['ab'] = [['a','b']] * df_computers.shape[0]\r\n",
-					"df_computers = df_computers.explode('ab')"
+					"df_computers = df_computers.explode('ab')\r\n",
+					"df_computers = df_computers.apply(select_computer, axis=1)\r\n",
+					"df_computers.head()"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
 				],
 				"execution_count": null
 			}
