@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "8ac44c4f-475e-4aa8-92ce-534531eb93d5"
+				"spark.autotune.trackingId": "1dac0410-a0de-4bab-b3ce-ff4533c23228"
 			}
 		},
 		"metadata": {
@@ -53,7 +53,7 @@
 				"source": [
 					"import pandas as pd"
 				],
-				"execution_count": 414
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -84,7 +84,7 @@
 					"y_tiles = df_input.shape[0]\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 415
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -120,7 +120,7 @@
 					"#print (f\"working on ({r.name[0]}, {r.name[1]})\")\r\n",
 					"#urdl(r)"
 				],
-				"execution_count": 416
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -146,6 +146,8 @@
 					"\r\n",
 					"    if row['contents_potential'] == '.':\r\n",
 					"        potential_cost = 999999\r\n",
+					"    elif row['contents_potential'] == 'E':\r\n",
+					"        potential_cost = -1\r\n",
 					"    else:\r\n",
 					"        potential_cost = row['contents_potential'][0]\r\n",
 					"\r\n",
@@ -167,7 +169,7 @@
 					"#r = df_move_locations.iloc[0].copy()\r\n",
 					"#move_cost(r)"
 				],
-				"execution_count": 470
+				"execution_count": 26
 			},
 			{
 				"cell_type": "code",
@@ -198,7 +200,7 @@
 					"#df_locations.loc[[(reindeer_y,reindeer_x)]] \r\n",
 					"#df_locations.head(30)"
 				],
-				"execution_count": 508
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -220,18 +222,19 @@
 					"while keep_walking == True:\r\n",
 					"\r\n",
 					"    df_current_locations = df_locations[df_locations['step'] == step].copy()\r\n",
-					"    df_current_locations['urdl'] = [['^','>','v','<']] * df_current_locations.shape[0]\r\n",
-					"    df_current_locations = df_current_locations.explode('urdl')\r\n",
-					"    df_current_locations = df_current_locations.apply(urdl, axis=1)\r\n",
-					"    df_current_locations.set_index(['y','x'], inplace=True)\r\n",
 					"\r\n",
-					"    df_available_locations = df_locations[df_locations['contents'].isin(['#']) == False].copy()\r\n",
-					"    df_potential_moves = df_current_locations.merge(df_available_locations, how='inner', left_index=True, right_index=True, suffixes=('_current','_potential'))\r\n",
+					"    if (df_current_locations.shape[0] > 0):\r\n",
+					"        df_current_locations['urdl'] = [['^','>','v','<']] * df_current_locations.shape[0]\r\n",
+					"        df_current_locations = df_current_locations.explode('urdl')\r\n",
+					"        df_current_locations = df_current_locations.apply(urdl, axis=1)\r\n",
+					"        df_current_locations.set_index(['y','x'], inplace=True)\r\n",
 					"\r\n",
-					"    #locations = [(12,0),(12,1),(12,2),(13,0),(13,1),(13,2),(14,0),(14,1),(14,2)]\r\n",
-					"    #df_potential_moves[df_potential_moves.index.isin(locations)].head(20)\r\n",
+					"        df_available_locations = df_locations[df_locations['contents'].isin(['#', 'E']) == False].copy()\r\n",
+					"        df_potential_moves = df_current_locations.merge(df_available_locations, how='inner', left_index=True, right_index=True, suffixes=('_current','_potential'))\r\n",
 					"\r\n",
-					"    if (df_potential_moves[df_potential_moves['contents_potential']=='E'].shape[0] ==0):\r\n",
+					"        #locations = [(12,0),(12,1),(12,2),(13,0),(13,1),(13,2),(14,0),(14,1),(14,2)]\r\n",
+					"        #df_potential_moves[df_potential_moves.index.isin(locations)].head(20)\r\n",
+					"\r\n",
 					"        df_potential_moves = df_potential_moves.apply(move_cost, axis=1)\r\n",
 					"        step += 1    \r\n",
 					"        df_good_moves = df_potential_moves.groupby(['y','x']).agg({\r\n",
@@ -240,15 +243,18 @@
 					"        })\r\n",
 					"        df_good_moves = df_good_moves[df_good_moves['step_move'] == step]\r\n",
 					"\r\n",
-					"        df_locations.loc[df_good_moves.index, ['contents']] = df_good_moves['contents_move']\r\n",
-					"        df_locations.loc[df_good_moves.index, ['step']] = df_good_moves['step_move']\r\n",
+					"        if (df_potential_moves.shape[0] > 0):\r\n",
+					"            df_locations.loc[df_good_moves.index, ['contents']] = df_good_moves['contents_move']\r\n",
+					"            df_locations.loc[df_good_moves.index, ['step']] = df_good_moves['step_move']\r\n",
+					"        else:\r\n",
+					"            keep_walking = False\r\n",
 					"    else:\r\n",
 					"        keep_walking = False\r\n",
 					"\r\n",
 					"    #if step >= 27:\r\n",
 					"    #    keep_walking = False"
 				],
-				"execution_count": 509
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
@@ -264,12 +270,9 @@
 					}
 				},
 				"source": [
-					"#df_visited_locations = df_locations[df_locations['contents'].isin(['.','#','E']) == False].copy()\r\n",
-					"#df_visited_locations.head()\r\n",
-					"\r\n",
 					"df_locations[['contents']].unstack()"
 				],
-				"execution_count": 510
+				"execution_count": 34
 			},
 			{
 				"cell_type": "code",
@@ -285,9 +288,9 @@
 					}
 				},
 				"source": [
-					""
+					"df_locations[['contents']][(df_locations.index.get_level_values(0) <= 4) & (df_locations.index.get_level_values(1) >= (df_locations.index.get_level_values(1).max() - 3))].unstack()"
 				],
-				"execution_count": 507
+				"execution_count": 51
 			},
 			{
 				"cell_type": "code",
@@ -303,7 +306,7 @@
 					}
 				},
 				"source": [
-					"step = 27\r\n",
+					"step = 35\r\n",
 					"\r\n",
 					"df_current_locations = df_locations[df_locations['step'] == step].copy()\r\n",
 					"df_current_locations['urdl'] = [['^','>','v','<']] * df_current_locations.shape[0]\r\n",
@@ -312,7 +315,7 @@
 					"df_current_locations.set_index(['y','x'], inplace=True)\r\n",
 					"df_current_locations.head(10)"
 				],
-				"execution_count": 502
+				"execution_count": 30
 			},
 			{
 				"cell_type": "code",
@@ -336,7 +339,7 @@
 					"\r\n",
 					"df_potential_moves[(df_potential_moves.index.get_level_values(0) > 10) & df_potential_moves.index.get_level_values(1) < 4].head(20)"
 				],
-				"execution_count": 503
+				"execution_count": 31
 			},
 			{
 				"cell_type": "code",
@@ -360,7 +363,7 @@
 					"df_good_moves = df_good_moves[df_good_moves['step_move'] == step]\r\n",
 					"df_good_moves.head()"
 				],
-				"execution_count": 493
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -381,7 +384,7 @@
 					"df_good_moves = df_potential_moves[df_potential_moves['step_move'] == step]\r\n",
 					"df_good_moves.head()"
 				],
-				"execution_count": 476
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -400,7 +403,7 @@
 					"df_locations.loc[df_good_moves.index, ['contents']] = df_good_moves['contents_move']\r\n",
 					"df_locations.loc[df_good_moves.index, ['step']] = df_good_moves['step_move']"
 				],
-				"execution_count": 426
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -419,7 +422,7 @@
 					"df_visited_locations = df_locations[df_locations['contents'].isin(['.','#','E']) == False].copy()\r\n",
 					"df_visited_locations.head()"
 				],
-				"execution_count": 427
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
