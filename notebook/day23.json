@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "77e87ccf-72e3-41c1-b78c-9ead159f5519"
+				"spark.autotune.trackingId": "06813942-8d74-43af-b0e2-eea92e681bed"
 			}
 		},
 		"metadata": {
@@ -93,9 +93,11 @@
 				},
 				"source": [
 					"df_connection = df_input.copy()\r\n",
-					"df_connection.index.name = 'connection_id'"
+					"df_connection.index.name = 'connection_id'\r\n",
+					"df_connection.reset_index(inplace=True)\r\n",
+					"df_connection.head()"
 				],
-				"execution_count": 15
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
@@ -140,10 +142,30 @@
 					"df_computers['ab'] = [['a','b']] * df_computers.shape[0]\r\n",
 					"df_computers = df_computers.explode('ab')\r\n",
 					"df_computers = df_computers.apply(select_computer, axis=1)\r\n",
-					"df_computers = df_computers[['computer']]\r\n",
+					"df_computers.reset_index(inplace=True)\r\n",
+					"df_computers = df_computers[['connection_id','computer']]\r\n",
 					"df_computers.head()"
 				],
-				"execution_count": 18
+				"execution_count": 36
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_join = df_computers.merge(df_connection, how='left', left_on=['computer'], right_on=['computer_a'], suffixes=('','_joina'))\r\n",
+					"df_join.head()"
+				],
+				"execution_count": 38
 			},
 			{
 				"cell_type": "code",
