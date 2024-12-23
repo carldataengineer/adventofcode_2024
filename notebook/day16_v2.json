@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1dac0410-a0de-4bab-b3ce-ff4533c23228"
+				"spark.autotune.trackingId": "c3aaee48-ea8e-4277-858c-5697eba56343"
 			}
 		},
 		"metadata": {
@@ -75,7 +75,7 @@
 					"for i in range(x_tiles):\r\n",
 					"    col_specs.append((i, i+1))\r\n",
 					"\r\n",
-					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day16/test_input.txt\"\\\r\n",
+					"df_input = pd.read_fwf(\"abfss://fsn-carl-follows@adlscarlfollows.dfs.core.windows.net/day16/input.txt\"\\\r\n",
 					"                    , header=None\\\r\n",
 					"                    , index_col=False\\\r\n",
 					"                    , colspecs=col_specs)\r\n",
@@ -84,7 +84,7 @@
 					"y_tiles = df_input.shape[0]\r\n",
 					"df_input.head()"
 				],
-				"execution_count": 3
+				"execution_count": 59
 			},
 			{
 				"cell_type": "code",
@@ -120,7 +120,7 @@
 					"#print (f\"working on ({r.name[0]}, {r.name[1]})\")\r\n",
 					"#urdl(r)"
 				],
-				"execution_count": 4
+				"execution_count": 60
 			},
 			{
 				"cell_type": "code",
@@ -169,7 +169,7 @@
 					"#r = df_move_locations.iloc[0].copy()\r\n",
 					"#move_cost(r)"
 				],
-				"execution_count": 26
+				"execution_count": 61
 			},
 			{
 				"cell_type": "code",
@@ -200,7 +200,7 @@
 					"#df_locations.loc[[(reindeer_y,reindeer_x)]] \r\n",
 					"#df_locations.head(30)"
 				],
-				"execution_count": 15
+				"execution_count": 62
 			},
 			{
 				"cell_type": "code",
@@ -254,7 +254,7 @@
 					"    #if step >= 27:\r\n",
 					"    #    keep_walking = False"
 				],
-				"execution_count": 33
+				"execution_count": 63
 			},
 			{
 				"cell_type": "code",
@@ -272,7 +272,7 @@
 				"source": [
 					"df_locations[['contents']].unstack()"
 				],
-				"execution_count": 34
+				"execution_count": 64
 			},
 			{
 				"cell_type": "code",
@@ -290,7 +290,20 @@
 				"source": [
 					"df_locations[['contents']][(df_locations.index.get_level_values(0) <= 4) & (df_locations.index.get_level_values(1) >= (df_locations.index.get_level_values(1).max() - 3))].unstack()"
 				],
-				"execution_count": 51
+				"execution_count": 65
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Part 1 Answer : 85396"
+				]
 			},
 			{
 				"cell_type": "code",
